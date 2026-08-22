@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -70,6 +71,7 @@
 
 </head>
 
+
 <body>
 
   <h2>📦 สแกน QR วัสดุ</h2>
@@ -100,21 +102,28 @@
 let scanner = null;
 
 
-// Google Apps Script Web App
+/*
+ * Google Apps Script Web App
+ */
 const SCRIPT_URL =
 "https://script.google.com/macros/s/AKfycbwOiLFnz_7z0F1USR4qcV3_oBmcd2VRHJJ5B5xVP2qBWAznWv62QC14tbql1FIZuRS9bA/exec";
 
 
-// --------------------------------------------------
-// เริ่ม Scanner
-// --------------------------------------------------
+/*
+ * ==========================================
+ * เริ่มสแกน
+ * ==========================================
+ */
 
 function startScanner() {
 
   document.getElementById("result").innerText =
     "กำลังเปิดกล้อง...";
 
-  scanner = new Html5Qrcode("reader");
+
+  scanner =
+    new Html5Qrcode("reader");
+
 
   scanner.start(
 
@@ -134,12 +143,26 @@ function startScanner() {
 
     function(decodedText) {
 
+      /*
+       * หยุดกล้อง
+       */
+
       stopScanner();
+
+
+      /*
+       * แสดง Item Code
+       */
 
       document.getElementById("result").innerText =
         "📦 Item Code: " +
         decodedText +
         "\nกำลังบันทึก...";
+
+
+      /*
+       * ส่งข้อมูล
+       */
 
       sendItemCode(decodedText);
 
@@ -147,7 +170,10 @@ function startScanner() {
 
     function(errorMessage) {
 
-      // ไม่ต้องแสดง Error ระหว่างค้นหา QR
+      /*
+       * ไม่ต้องแสดง Error
+       * ระหว่างค้นหา QR
+       */
 
     }
 
@@ -164,9 +190,11 @@ function startScanner() {
 }
 
 
-// --------------------------------------------------
-// หยุด Scanner
-// --------------------------------------------------
+/*
+ * ==========================================
+ * หยุดสแกน
+ * ==========================================
+ */
 
 function stopScanner() {
 
@@ -174,12 +202,14 @@ function stopScanner() {
     return;
   }
 
+
   scanner
     .stop()
 
     .then(function() {
 
       scanner.clear();
+
       scanner = null;
 
     })
@@ -193,59 +223,111 @@ function stopScanner() {
 }
 
 
-// --------------------------------------------------
-// ส่ง Item Code ไป Google Apps Script
-// --------------------------------------------------
+/*
+ * ==========================================
+ * ส่ง Item Code
+ * JSONP
+ * ==========================================
+ */
 
 function sendItemCode(itemCode) {
 
+
+  /*
+   * สร้างชื่อ Callback
+   */
+
+  const callbackName =
+    "qrCallback_" +
+    Date.now();
+
+
+  /*
+   * สร้าง Script
+   */
+
+  const script =
+    document.createElement("script");
+
+
+  /*
+   * Callback
+   */
+
+  window[callbackName] =
+    function(data) {
+
+
+      if (data.success) {
+
+        document.getElementById("result").innerText =
+          "✅ " +
+          data.message;
+
+      }
+
+      else {
+
+        document.getElementById("result").innerText =
+          "❌ " +
+          data.message;
+
+      }
+
+
+      /*
+       * ล้าง Script
+       */
+
+      delete window[callbackName];
+
+      script.remove();
+
+    };
+
+
+  /*
+   * สร้าง URL
+   */
+
   const url =
     SCRIPT_URL +
-    "?action=scan&itemCode=" +
-    encodeURIComponent(itemCode);
+    "?action=scan" +
+    "&itemCode=" +
+    encodeURIComponent(itemCode) +
+    "&callback=" +
+    callbackName;
 
-  fetch(url, {
-    method: "GET",
-    mode: "cors"
-  })
 
-  .then(function(response) {
+  /*
+   * เรียก Apps Script
+   */
 
-    if (!response.ok) {
-      throw new Error(
-        "HTTP " + response.status
-      );
-    }
+  script.src = url;
 
-    return response.json();
 
-  })
+  /*
+   * ถ้าเชื่อมต่อไม่ได้
+   */
 
-  .then(function(data) {
-
-    if (data.success) {
+  script.onerror =
+    function() {
 
       document.getElementById("result").innerText =
-        "✅ " + data.message;
+        "❌ ส่งข้อมูลไป Google Sheet ไม่สำเร็จ";
 
-    } else {
+      delete window[callbackName];
 
-      document.getElementById("result").innerText =
-        "❌ " + data.message;
+      script.remove();
 
-    }
+    };
 
-  })
 
-  .catch(function(error) {
+  /*
+   * ส่งคำขอ
+   */
 
-    console.error(error);
-
-    document.getElementById("result").innerText =
-      "❌ ส่งข้อมูลไป Google Sheet ไม่สำเร็จ\n" +
-      error.message;
-
-  });
+  document.body.appendChild(script);
 
 }
 
