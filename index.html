@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>QR Scanner - เบิกวัสดุ</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    #reader {
+      width: 100%;
+      max-width: 450px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    #result {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 450px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    button {
+      font-size: 17px;
+      padding: 12px 20px;
+      margin: 5px;
+      border: 0;
+      border-radius: 8px;
+    }
+
+    #startBtn {
+      background: #1a73e8;
+      color: white;
+    }
+
+    #stopBtn {
+      background: #777;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>📦 สแกน QR วัสดุ</h2>
+
+<div id="reader"></div>
+
+<div id="result">
+  ยังไม่ได้สแกน
+</div>
+
+<button id="startBtn" onclick="startScanner()">
+  📷 เริ่มสแกน
+</button>
+
+<button id="stopBtn" onclick="stopScanner()">
+  หยุดสแกน
+</button>
+
+<script>
+
+let scanner = null;
+
+/*
+  URL ของ Google Apps Script
+*/
+const SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbzTvoBg4fRnpVEoqTTLc33gX6AUXlBoCFNMg1l-jxEMzH7zK0fmVq9Q2oJL4lHE9I6DCw/exec";
+
+
+function startScanner() {
+
+  document.getElementById("result").innerText =
+    "กำลังเปิดกล้อง...";
+
+  scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+    {
+      facingMode: "environment"
+    },
+    {
+      fps: 10,
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+    },
+
+    function(decodedText) {
+
+      document.getElementById("result").innerText =
+        "กำลังบันทึก Item Code: " + decodedText;
+
+      stopScanner();
+
+      sendItemCode(decodedText);
+
+    },
+
+    function(errorMessage) {
+
+      // ไม่ต้องแสดงข้อความระหว่างค้นหา QR
+
+    }
+
+  ).catch(function(error) {
+
+    document.getElementById("result").innerText =
+      "❌ เปิดกล้องไม่ได้\n" + error;
+
+  });
+
+}
+
+
+function stopScanner() {
+
+  if (scanner) {
+
+    scanner.stop()
+      .then(function() {
+
+        scanner.clear();
+        scanner = null;
+
+      })
+      .catch(function(error) {
+
+        scanner = null;
+
+      });
+
+  }
+
+}
+
+
+function sendItemCode(itemCode) {
+
+  const url =
+    SCRIPT_URL +
+    "?action=scan&itemCode=" +
+    encodeURIComponent(itemCode);
+
+  fetch(url)
+
+    .then(function(response) {
+
+      return response.json();
+
+    })
+
+    .then(function(data) {
+
+      if (data.success) {
+
+        document.getElementById("result").innerText =
+          "✅ " + data.message;
+
+      } else {
+
+        document.getElementById("result").innerText =
+          "❌ " + data.message;
+
+      }
+
+    })
+
+    .catch(function(error) {
+
+      document.getElementById("result").innerText =
+        "❌ ส่งข้อมูลไม่สำเร็จ\n" + error;
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>
