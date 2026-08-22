@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
 
   <meta charset="UTF-8">
@@ -15,6 +16,10 @@
 
   <style>
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
       background: #f5f5f5;
@@ -24,7 +29,7 @@
     }
 
     h2 {
-      margin-bottom: 10px;
+      margin: 10px 0 15px;
     }
 
     #reader {
@@ -34,25 +39,26 @@
       background: white;
       border-radius: 12px;
       padding: 10px;
-      box-sizing: border-box;
     }
 
     #result {
+      width: 100%;
+      max-width: 450px;
+      margin: 15px auto;
+      padding: 15px;
       background: white;
       border-radius: 10px;
-      padding: 15px;
-      margin: 15px auto;
-      max-width: 450px;
       font-size: 18px;
       font-weight: bold;
       white-space: pre-line;
+      word-break: break-word;
     }
 
     button {
       font-size: 17px;
       padding: 12px 20px;
       margin: 5px;
-      border: 0;
+      border: none;
       border-radius: 8px;
       cursor: pointer;
     }
@@ -65,6 +71,10 @@
     #stopBtn {
       background: #777;
       color: white;
+    }
+
+    #startBtn:disabled {
+      background: #aaa;
     }
 
   </style>
@@ -99,27 +109,48 @@
 
 <script>
 
-let scanner = null;
+/* ==================================================
+   Google Apps Script Web App
+   ================================================== */
 
-
-/*
- * Google Apps Script Web App
- */
 const SCRIPT_URL =
 "https://script.google.com/macros/s/AKfycbwOiLFnz_7z0F1USR4qcV3_oBmcd2VRHJJ5B5xVP2qBWAznWv62QC14tbql1FIZuRS9bA/exec";
 
 
-/*
- * ==========================================
- * เริ่มสแกน
- * ==========================================
- */
+let scanner = null;
+let isScanning = false;
+let isSending = false;
+
+
+/* ==================================================
+   แสดงข้อความ
+   ================================================== */
+
+function showResult(message) {
+
+  document.getElementById("result").innerText =
+    message;
+
+}
+
+
+/* ==================================================
+   เริ่ม Scanner
+   ================================================== */
 
 function startScanner() {
 
-  document.getElementById("result").innerText =
-    "กำลังเปิดกล้อง...";
+  if (isScanning) {
+    return;
+  }
 
+  if (isSending) {
+    return;
+  }
+
+  showResult("📷 กำลังเปิดกล้อง...");
+
+  document.getElementById("startBtn").disabled = true;
 
   scanner =
     new Html5Qrcode("reader");
@@ -143,6 +174,14 @@ function startScanner() {
 
     function(decodedText) {
 
+      if (isSending) {
+        return;
+      }
+
+      isSending = true;
+
+      isScanning = false;
+
       /*
        * หยุดกล้อง
        */
@@ -151,13 +190,14 @@ function startScanner() {
 
 
       /*
-       * แสดง Item Code
+       * แสดงข้อมูล
        */
 
-      document.getElementById("result").innerText =
+      showResult(
         "📦 Item Code: " +
         decodedText +
-        "\nกำลังบันทึก...";
+        "\n\nกำลังบันทึก..."
+      );
 
 
       /*
@@ -171,7 +211,7 @@ function startScanner() {
     function(errorMessage) {
 
       /*
-       * ไม่ต้องแสดง Error
+       * ไม่ต้องแสดง error
        * ระหว่างค้นหา QR
        */
 
@@ -179,27 +219,46 @@ function startScanner() {
 
   )
 
+  .then(function() {
+
+    isScanning = true;
+
+    document.getElementById("startBtn").disabled = false;
+
+    showResult("📷 พร้อมสแกน QR");
+
+  })
+
   .catch(function(error) {
 
-    document.getElementById("result").innerText =
-      "❌ ไม่สามารถเปิดกล้องได้\n" +
-      error;
+    isScanning = false;
+
+    document.getElementById("startBtn").disabled = false;
+
+    showResult(
+      "❌ ไม่สามารถเปิดกล้องได้\n\n" +
+      error
+    );
 
   });
 
 }
 
 
-/*
- * ==========================================
- * หยุดสแกน
- * ==========================================
- */
+/* ==================================================
+   หยุด Scanner
+   ================================================== */
 
 function stopScanner() {
 
   if (!scanner) {
+
+    isScanning = false;
+
+    document.getElementById("startBtn").disabled = false;
+
     return;
+
   }
 
 
@@ -212,25 +271,47 @@ function stopScanner() {
 
       scanner = null;
 
+      isScanning = false;
+
+      document.getElementById("startBtn").disabled = false;
+
     })
 
     .catch(function() {
 
       scanner = null;
 
+      isScanning = false;
+
+      document.getElementById("startBtn").disabled = false;
+
     });
 
 }
 
 
-/*
- * ==========================================
- * ส่ง Item Code
- * JSONP
- * ==========================================
- */
+/* ==================================================
+   ส่ง Item Code ไป Google Apps Script
+   JSONP
+   ================================================== */
 
 function sendItemCode(itemCode) {
+
+  itemCode =
+    String(itemCode || "").trim();
+
+
+  if (!itemCode) {
+
+    isSending = false;
+
+    showResult(
+      "❌ ไม่พบ Item Code"
+    );
+
+    return;
+
+  }
 
 
   /*
@@ -251,37 +332,85 @@ function sendItemCode(itemCode) {
 
 
   /*
+   * ตั้งเวลา Timeout
+   */
+
+  const timeout =
+    setTimeout(function() {
+
+      if (window[callbackName]) {
+
+        delete window[callbackName];
+
+      }
+
+      script.remove();
+
+      isSending = false;
+
+      showResult(
+        "❌ Google Apps Script ไม่ตอบกลับ\n\n" +
+        "กรุณาตรวจสอบ Internet แล้วลองใหม่"
+      );
+
+    }, 15000);
+
+
+  /*
    * Callback
    */
 
   window[callbackName] =
     function(data) {
 
+      clearTimeout(timeout);
 
-      if (data.success) {
 
-        document.getElementById("result").innerText =
-          "✅ " +
-          data.message;
+      try {
+
+        if (data && data.success) {
+
+          showResult(
+            "✅ บันทึกสำเร็จ\n\n" +
+            data.message
+          );
+
+        }
+
+        else {
+
+          showResult(
+            "❌ บันทึกไม่สำเร็จ\n\n" +
+            (
+              data && data.message
+                ? data.message
+                : "ไม่ทราบสาเหตุ"
+            )
+          );
+
+        }
 
       }
 
-      else {
+      catch(error) {
 
-        document.getElementById("result").innerText =
-          "❌ " +
-          data.message;
+        showResult(
+          "❌ เกิดข้อผิดพลาด\n\n" +
+          error
+        );
 
       }
 
 
       /*
-       * ล้าง Script
+       * ล้าง Callback
        */
 
       delete window[callbackName];
 
       script.remove();
+
+      isSending = false;
 
     };
 
@@ -290,7 +419,7 @@ function sendItemCode(itemCode) {
    * สร้าง URL
    */
 
-  const url =
+  const requestUrl =
     SCRIPT_URL +
     "?action=scan" +
     "&itemCode=" +
@@ -300,38 +429,66 @@ function sendItemCode(itemCode) {
 
 
   /*
-   * เรียก Apps Script
+   * กำหนด URL
    */
 
-  script.src = url;
+  script.src =
+    requestUrl;
 
 
   /*
-   * ถ้าเชื่อมต่อไม่ได้
+   * ถ้าโหลดไม่ได้
    */
 
   script.onerror =
     function() {
 
-      document.getElementById("result").innerText =
-        "❌ ส่งข้อมูลไป Google Sheet ไม่สำเร็จ";
+      clearTimeout(timeout);
 
       delete window[callbackName];
 
       script.remove();
 
+      isSending = false;
+
+      showResult(
+        "❌ เชื่อมต่อ Google Sheet ไม่สำเร็จ\n\n" +
+        "กรุณาลองใหม่อีกครั้ง"
+      );
+
     };
 
 
   /*
-   * ส่งคำขอ
+   * ส่ง Request
    */
 
   document.body.appendChild(script);
 
 }
 
+
+/* ==================================================
+   ป้องกันกดปุ่ม Stop แล้วเกิด Error
+   ================================================== */
+
+window.addEventListener(
+  "beforeunload",
+  function() {
+
+    if (scanner) {
+
+      scanner
+        .stop()
+        .catch(function() {});
+
+    }
+
+  }
+);
+
 </script>
 
 </body>
+
 </html>
