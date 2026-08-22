@@ -101,7 +101,7 @@ let scanner = null;
 
 
 // Google Apps Script Web App
-const SCRIconst SCRIPT_URL =
+const SCRIPT_URL =
 "https://script.google.com/macros/s/AKfycbwOiLFnz_7z0F1USR4qcV3_oBmcd2VRHJJ5B5xVP2qBWAznWv62QC14tbql1FIZuRS9bA/exec";
 
 
@@ -114,8 +114,7 @@ function startScanner() {
   document.getElementById("result").innerText =
     "กำลังเปิดกล้อง...";
 
-  scanner =
-    new Html5Qrcode("reader");
+  scanner = new Html5Qrcode("reader");
 
   scanner.start(
 
@@ -135,7 +134,6 @@ function startScanner() {
 
     function(decodedText) {
 
-      // หยุดกล้องก่อน
       stopScanner();
 
       document.getElementById("result").innerText =
@@ -143,7 +141,6 @@ function startScanner() {
         decodedText +
         "\nกำลังบันทึก...";
 
-      // ส่ง Item Code
       sendItemCode(decodedText);
 
     },
@@ -183,7 +180,6 @@ function stopScanner() {
     .then(function() {
 
       scanner.clear();
-
       scanner = null;
 
     })
@@ -199,77 +195,57 @@ function stopScanner() {
 
 // --------------------------------------------------
 // ส่ง Item Code ไป Google Apps Script
-// JSONP
 // --------------------------------------------------
 
 function sendItemCode(itemCode) {
 
-  const callbackName =
-    "qrCallback_" +
-    Date.now();
-
-  const script =
-    document.createElement("script");
-
-
-  // สร้าง callback
-  window[callbackName] =
-    function(data) {
-
-      try {
-
-        if (data.success) {
-
-          document.getElementById("result").innerText =
-            "✅ " +
-            data.message;
-
-        } else {
-
-          document.getElementById("result").innerText =
-            "❌ " +
-            data.message;
-
-        }
-
-      }
-      finally {
-
-        delete window[callbackName];
-
-        script.remove();
-
-      }
-
-    };
-
-
   const url =
     SCRIPT_URL +
-    "?action=scan" +
-    "&itemCode=" +
-    encodeURIComponent(itemCode) +
-    "&callback=" +
-    callbackName;
+    "?action=scan&itemCode=" +
+    encodeURIComponent(itemCode);
 
+  fetch(url, {
+    method: "GET",
+    mode: "cors"
+  })
 
-  script.src = url;
+  .then(function(response) {
 
+    if (!response.ok) {
+      throw new Error(
+        "HTTP " + response.status
+      );
+    }
 
-  script.onerror =
-    function() {
+    return response.json();
+
+  })
+
+  .then(function(data) {
+
+    if (data.success) {
 
       document.getElementById("result").innerText =
-        "❌ ส่งข้อมูลไป Google Sheet ไม่สำเร็จ";
+        "✅ " + data.message;
 
-      delete window[callbackName];
+    } else {
 
-      script.remove();
+      document.getElementById("result").innerText =
+        "❌ " + data.message;
 
-    };
+    }
 
+  })
 
-  document.body.appendChild(script);
+  .catch(function(error) {
+
+    console.error(error);
+
+    document.getElementById("result").innerText =
+      "❌ ส่งข้อมูลไป Google Sheet ไม่สำเร็จ\n" +
+      error.message;
+
+  });
 
 }
 
