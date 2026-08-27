@@ -2,18 +2,12 @@
 <html lang="th">
 
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>QR Scanner</title>
 
-<script
-  src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js">
-</script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 <style>
 
@@ -23,7 +17,7 @@
 
 body {
   margin: 0;
-  padding: 15px;
+  padding: 20px;
   font-family: Arial, sans-serif;
   background: #f3f4f6;
 }
@@ -35,22 +29,24 @@ body {
 
 .card {
   background: white;
-  padding: 18px;
+  padding: 20px;
   border-radius: 14px;
   box-shadow: 0 2px 10px rgba(0,0,0,.08);
 }
 
 h2 {
   text-align: center;
+  margin-top: 0;
 }
 
 button {
   width: 100%;
-  padding: 14px;
-  margin-top: 10px;
   border: 0;
   border-radius: 8px;
+  padding: 14px;
+  margin-top: 10px;
   font-size: 17px;
+  cursor: pointer;
 }
 
 .blue {
@@ -69,9 +65,9 @@ button {
 }
 
 .status {
+  margin-top: 15px;
+  padding: 12px;
   text-align: center;
-  padding: 15px;
-  margin-top: 10px;
   white-space: pre-line;
   font-weight: bold;
 }
@@ -85,20 +81,18 @@ button {
   margin-top: 15px;
   padding: 15px;
   background: #f8f9fa;
-  border-radius: 10px;
+  border-radius: 8px;
   word-break: break-all;
 }
 
-.code {
-  font-size: 22px;
-  font-weight: bold;
-  text-align: center;
-  margin-top: 10px;
+.hidden {
+  display: none;
 }
 
 </style>
 
 </head>
+
 
 <body>
 
@@ -108,35 +102,56 @@ button {
 
 <h2>📷 QR Scanner</h2>
 
+
 <button
   class="blue"
   onclick="startScanner()">
+
 📷 เปิดกล้องและสแกน QR
+
 </button>
+
 
 <button
   class="gray"
   onclick="stopScanner()">
+
 ⏹ หยุดกล้อง
+
 </button>
+
 
 <div id="reader"></div>
 
-<div id="status" class="status">
+
+<div
+  id="status"
+  class="status">
+
 พร้อมใช้งาน
+
 </div>
 
-<div id="result" class="result">
+
+<div
+  id="result"
+  class="result hidden">
 
 <b>ข้อมูลจาก QR</b>
 
-<div
-  id="decodedText"
-  class="code">
-ยังไม่มีข้อมูล
-</div>
+<div id="decodedText"></div>
+
+
+<button
+  class="green"
+  onclick="sendResult()">
+
+✅ ส่งข้อมูลกลับระบบ
+
+</button>
 
 </div>
+
 
 </div>
 
@@ -145,16 +160,23 @@ button {
 
 <script>
 
+
+/* =================================================
+   VARIABLES
+================================================= */
+
 let scanner = null;
 
 let scanning = false;
 
 let lastResult = "";
 
+let qrResult = "";
 
-/* =========================================
+
+/* =================================================
    STATUS
-========================================= */
+================================================= */
 
 function setStatus(message) {
 
@@ -165,11 +187,12 @@ function setStatus(message) {
 }
 
 
-/* =========================================
-   START
-========================================= */
+/* =================================================
+   START SCANNER
+================================================= */
 
 async function startScanner() {
+
 
   if (scanning) {
 
@@ -189,18 +212,23 @@ async function startScanner() {
 
   try {
 
-    /* HTTPS */
+
+    /* ---------------------------------------------
+       HTTPS
+    --------------------------------------------- */
 
     if (!window.isSecureContext) {
 
       throw new Error(
-        "หน้าเว็บไม่ใช่ HTTPS"
+        "หน้านี้ไม่ใช่ HTTPS"
       );
 
     }
 
 
-    /* Browser camera */
+    /* ---------------------------------------------
+       Browser camera
+    --------------------------------------------- */
 
     if (
       !navigator.mediaDevices ||
@@ -208,13 +236,15 @@ async function startScanner() {
     ) {
 
       throw new Error(
-        "Browser ไม่รองรับกล้อง"
+        "Browser ไม่รองรับการใช้งานกล้อง"
       );
 
     }
 
 
-    /* ขอ permission */
+    /* ---------------------------------------------
+       ขอสิทธิ์กล้อง
+    --------------------------------------------- */
 
     setStatus(
       "📷 กำลังขอสิทธิ์ใช้กล้อง..."
@@ -231,14 +261,18 @@ async function startScanner() {
 
     stream
       .getTracks()
-      .forEach(function(track) {
+      .forEach(
+        function(track) {
 
-        track.stop();
+          track.stop();
 
-      });
+        }
+      );
 
 
-    /* อ่านกล้อง */
+    /* ---------------------------------------------
+       อ่านกล้อง
+    --------------------------------------------- */
 
     const cameras =
       await Html5Qrcode.getCameras();
@@ -250,34 +284,42 @@ async function startScanner() {
     ) {
 
       throw new Error(
-        "ไม่พบกล้อง"
+        "ไม่พบกล้องในอุปกรณ์"
       );
 
     }
 
 
-    /* เลือกกล้อง */
+    /* ---------------------------------------------
+       เลือกกล้องหลัง
+    --------------------------------------------- */
 
     let cameraId =
       cameras[0].id;
 
 
     const backCamera =
-      cameras.find(function(camera) {
+      cameras.find(
+        function(camera) {
 
-        const label =
-          String(
-            camera.label || ""
-          ).toLowerCase();
+          const label =
+            String(
+              camera.label || ""
+            ).toLowerCase();
 
 
-        return (
-          label.includes("back") ||
-          label.includes("rear") ||
-          label.includes("environment")
-        );
+          return (
 
-      });
+            label.includes("back") ||
+
+            label.includes("rear") ||
+
+            label.includes("environment")
+
+          );
+
+        }
+      );
 
 
     if (backCamera) {
@@ -288,7 +330,9 @@ async function startScanner() {
     }
 
 
-    /* Scanner */
+    /* ---------------------------------------------
+       สร้าง Scanner
+    --------------------------------------------- */
 
     scanner =
       new Html5Qrcode(
@@ -304,6 +348,10 @@ async function startScanner() {
     );
 
 
+    /* ---------------------------------------------
+       START
+    --------------------------------------------- */
+
     await scanner.start(
 
       cameraId,
@@ -313,16 +361,21 @@ async function startScanner() {
         fps: 10,
 
         qrbox: function(
-          width,
-          height
+          viewfinderWidth,
+          viewfinderHeight
         ) {
+
+
+          const minSize =
+            Math.min(
+              viewfinderWidth,
+              viewfinderHeight
+            );
+
 
           const size =
             Math.floor(
-              Math.min(
-                width,
-                height
-              ) * 0.70
+              minSize * 0.70
             );
 
 
@@ -336,6 +389,7 @@ async function startScanner() {
 
         },
 
+
         aspectRatio: 1.0,
 
         disableFlip: false
@@ -345,27 +399,37 @@ async function startScanner() {
 
       function(decodedText) {
 
-        handleQR(decodedText);
+        handleQR(
+          decodedText
+        );
 
       },
 
 
-      function() {}
+      function(errorMessage) {
+
+        /*
+         * ไม่ต้องแสดง error
+         * ระหว่างค้นหา QR
+         */
+
+      }
 
     );
 
 
     setStatus(
-      "✅ กล้องพร้อม\n" +
-      "กรุณาหันกล้องไปที่ QR"
+      "✅ กล้องพร้อม\nกรุณาหันกล้องไปที่ QR"
     );
+
 
   }
 
+  catch (error) {
 
-  catch(error) {
 
     console.error(
+      "CAMERA ERROR:",
       error
     );
 
@@ -381,7 +445,11 @@ async function startScanner() {
 
       }
 
-      catch(e) {}
+      catch (e) {
+
+        console.log(e);
+
+      }
 
     }
 
@@ -420,30 +488,40 @@ async function startScanner() {
 }
 
 
-/* =========================================
-   QR RESULT
-========================================= */
+/* =================================================
+   HANDLE QR
+================================================= */
 
-async function handleQR(decodedText) {
+async function handleQR(
+  decodedText
+) {
 
-  const code =
+
+  const text =
     String(
       decodedText || ""
     ).trim();
 
 
-  if (!code) {
+  if (!text) {
+
     return;
+
   }
 
 
-  if (code === lastResult) {
+  if (
+    text === lastResult
+  ) {
+
     return;
+
   }
 
 
-  lastResult =
-    code;
+  lastResult = text;
+
+  qrResult = text;
 
 
   await stopScanner(
@@ -454,35 +532,47 @@ async function handleQR(decodedText) {
   document.getElementById(
     "decodedText"
   ).innerText =
-    code;
+    text;
+
+
+  document.getElementById(
+    "result"
+  ).classList.remove(
+    "hidden"
+  );
 
 
   setStatus(
-    "✅ สแกนสำเร็จ\n" +
-    "QR: " +
-    code
+    "✅ สแกน QR สำเร็จ\n" +
+    text
   );
 
 
   /*
-   * ส่งค่ากลับไปยังระบบใบเบิก
+   * ส่งกลับอัตโนมัติ
    */
 
-  sendResultToParent(
-    code
-  );
+  sendResult();
 
 }
 
 
-/* =========================================
+/* =================================================
    SEND RESULT
-========================================= */
+================================================= */
 
-function sendResultToParent(code) {
+function sendResult() {
+
+
+  if (!qrResult) {
+
+    return;
+
+  }
+
 
   /*
-   * กรณีเปิด Scanner เป็นหน้าต่างใหม่
+   * ตรวจสอบว่ามีหน้าหลัก
    */
 
   if (
@@ -490,62 +580,76 @@ function sendResultToParent(code) {
     !window.opener.closed
   ) {
 
+
     window.opener.postMessage(
 
       {
 
-        type:
-          "QR_RESULT",
+        type: "QR_RESULT",
 
-        code:
-          code
+        code: qrResult
 
       },
 
       "*"
 
     );
+
+
+    setStatus(
+
+      "✅ ส่งข้อมูลกลับระบบแล้ว\n" +
+      qrResult
+
+    );
+
+
+    /*
+     * ปิดหน้าสแกนหลังส่ง
+     */
+
+    setTimeout(
+      function() {
+
+        window.close();
+
+      },
+      500
+    );
+
+
+    return;
 
   }
 
 
   /*
-   * กรณีเปิด Scanner ใน iframe
+   * กรณีเปิด Scanner โดยตรง
    */
 
-  if (
-    window.parent &&
-    window.parent !== window
-  ) {
+  setStatus(
 
-    window.parent.postMessage(
+    "✅ อ่าน QR สำเร็จ\n\n" +
 
-      {
+    qrResult +
 
-        type:
-          "QR_RESULT",
+    "\n\n" +
 
-        code:
-          code
+    "กรุณาเปิด Scanner จากระบบใบเบิก"
 
-      },
-
-      "*"
-
-    );
-
-  }
+  );
 
 }
 
 
-/* =========================================
+/* =================================================
    STOP
-========================================= */
+================================================= */
 
 async function stopScanner(
-  showStatus = true
+  showMessage = true
 ) {
+
 
   if (!scanner) {
 
@@ -566,9 +670,10 @@ async function stopScanner(
 
   }
 
-  catch(error) {
+  catch (error) {
 
     console.log(
+      "Stop camera:",
       error
     );
 
@@ -581,9 +686,10 @@ async function stopScanner(
 
   }
 
-  catch(error) {
+  catch (error) {
 
     console.log(
+      "Clear scanner:",
       error
     );
 
@@ -595,7 +701,7 @@ async function stopScanner(
   scanning = false;
 
 
-  if (showStatus) {
+  if (showMessage) {
 
     setStatus(
       "⏹ หยุดกล้องแล้ว"
