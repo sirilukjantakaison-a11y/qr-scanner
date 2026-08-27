@@ -1,1273 +1,609 @@
-<!DOCTYPE html>
-<html lang="th">
-
-<head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  >
-
-  <title>ระบบใบเบิกวัสดุ</title>
-
-  <!-- QR Scanner -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
-
-  <style>
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 15px;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: auto;
-    }
-
-    .header,
-    .card {
-      background: white;
-      padding: 18px;
-      border-radius: 12px;
-      margin-bottom: 15px;
-    }
-
-    h2 {
-      text-align: center;
-      margin-top: 0;
-    }
-
-    h3 {
-      margin-top: 0;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 7px;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      padding: 13px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .scan-btn {
-      background: #1a73e8;
-      color: white;
-    }
-
-    .stop-btn {
-      background: #777;
-      color: white;
-    }
-
-    .search-btn {
-      background: #607d8b;
-      color: white;
-    }
-
-    .add-btn {
-      background: #ff9800;
-      color: white;
-    }
-
-    .save-btn {
-      background: #188038;
-      color: white;
-      font-weight: bold;
-    }
-
-    .delete-btn {
-      background: #d93025;
-      color: white;
-      width: auto;
-      padding: 7px 10px;
-      margin: 0;
-    }
-
-    #reader {
-      width: 100%;
-      margin-top: 12px;
-    }
-
-    .status {
-      margin-top: 10px;
-      padding: 12px;
-      border-radius: 8px;
-      background: #eeeeee;
-      text-align: center;
-      font-weight: bold;
-      white-space: pre-line;
-    }
-
-    .item-info {
-      background: #f1f8e9;
-      padding: 12px;
-      margin-top: 12px;
-      border-radius: 8px;
-      line-height: 1.7;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th,
-    td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-    }
-
-    th {
-      background: #eeeeee;
-    }
-
-    .item-name {
-      text-align: left;
-    }
-
-    .qty {
-      width: 70px;
-      padding: 7px;
-      margin: 0;
-    }
-
-    .empty {
-      color: #888;
-      padding: 20px;
-    }
-
-  </style>
-
-</head>
-
-
-<body>
-
-<div class="container">
-
-
-  <!-- HEADER -->
-
-  <div class="header">
-
-    <h2>📦 ระบบใบเบิกวัสดุ</h2>
-
-    <p style="text-align:center;">
-      ใบเบิกวัสดุหลายรายการ
-    </p>
-
-  </div>
-
-
-  <!-- ข้อมูลผู้เบิก -->
-
-  <div class="card">
-
-    <h3>👤 ข้อมูลผู้เบิก</h3>
-
-
-    <label>Employee</label>
-
-    <input
-      id="employee"
-      type="text"
-      placeholder="ชื่อ-นามสกุล"
-    >
-
-
-    <label>Emp. ID</label>
-
-    <input
-      id="empId"
-      type="text"
-      placeholder="รหัสพนักงาน"
-    >
-
-
-    <label>Department</label>
-
-    <input
-      id="department"
-      type="text"
-      placeholder="หน่วยงาน"
-    >
-
-
-    <label>Station</label>
-
-    <input
-      id="station"
-      type="text"
-      placeholder="Station"
-    >
-
-
-    <label>Model</label>
-
-    <input
-      id="model"
-      type="text"
-      placeholder="Model"
-    >
-
-
-    <label>Used for</label>
-
-    <input
-      id="usedFor"
-      type="text"
-      placeholder="ใช้สำหรับ"
-    >
-
-  </div>
-
-
-  <!-- SCANNER -->
-
-  <div class="card">
-
-    <h3>📷 สแกนวัสดุ</h3>
-
-
-    <button
-      id="startBtn"
-      class="scan-btn"
-      onclick="startScanner()"
-    >
-      📷 สแกน QR Code
-    </button>
-
-
-    <button
-      id="stopBtn"
-      class="stop-btn"
-      onclick="stopScanner()"
-    >
-      ⏹ หยุดกล้อง
-    </button>
-
-
-    <div id="reader"></div>
-
-
-    <div
-      id="scanStatus"
-      class="status"
-    >
-      พร้อมสแกน
-    </div>
-
-
-    <!-- ITEM CODE -->
-
-    <label>Item Code</label>
-
-    <input
-      id="itemCode"
-      type="text"
-      placeholder="สแกน QR หรือกรอก Item Code"
-    >
-
-
-    <button
-      class="search-btn"
-      onclick="searchItem()"
-    >
-      🔍 ค้นหา Item
-    </button>
-
-
-    <!-- ITEM INFORMATION -->
-
-    <div id="itemInfo"></div>
-
-
-    <!-- QUANTITY -->
-
-    <label>จำนวน</label>
-
-    <input
-      id="qty"
-      class="qty"
-      type="number"
-      min="1"
-      value="1"
-    >
-
-
-    <button
-      class="add-btn"
-      onclick="addItem()"
-    >
-      ➕ เพิ่มรายการ
-    </button>
-
-  </div>
-
-
-  <!-- ITEM LIST -->
-
-  <div class="card">
-
-    <h3>📋 รายการที่ต้องการเบิก</h3>
-
-
-    <table>
-
-      <thead>
-
-        <tr>
-          <th>#</th>
-          <th>Item Code</th>
-          <th>Item Name</th>
-          <th>Unit</th>
-          <th>Qty</th>
-          <th></th>
-        </tr>
-
-      </thead>
-
-
-      <tbody id="itemTable">
-
-        <tr>
-
-          <td
-            colspan="6"
-            class="empty"
-          >
-            ยังไม่มีรายการ
-          </td>
-
-        </tr>
-
-      </tbody>
-
-    </table>
-
-  </div>
-
-
-  <!-- SAVE -->
-
-  <div class="card">
-
-    <button
-      class="save-btn"
-      onclick="saveRequest()"
-    >
-      ✅ ยืนยันการเบิก
-    </button>
-
-  </div>
-
-
-</div>
-
-
-<script>
+/*************************************************
+ * ระบบใบเบิกวัสดุ QR
+ * Google Apps Script
+ *
+ * ใช้ร่วมกับ GitHub Pages
+ *************************************************/
+
+const CONFIG = {
+  ITEM_SHEET: "MASTER_ITEM",
+  TRANSACTION_SHEET: "TRANSACTION"
+};
 
 
 /*************************************************
- * Apps Script Web App URL
+ * doGet
+ *
+ * รองรับ 3 แบบ
+ *
+ * 1. เปิด Web App
+ * 2. ค้นหา Item
+ * 3. บันทึกใบเบิก
  *************************************************/
 
-const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbxZzxnjtVFhG9hIsnM14nHRTpv9ASlabM6Zgnj9ZLiLnR1VXCKyRvwip9nz2Q7tdPVvBA/exec";
-
-
-/*************************************************
- * ตัวแปรระบบ
- *************************************************/
-
-let scanner = null;
-
-let scannerRunning = false;
-
-let selectedItem = null;
-
-let items = [];
-
-let lastScannedCode = "";
-
-let scanLock = false;
-
-
-/*************************************************
- * START SCANNER
- *************************************************/
-
-async function startScanner() {
-
-  if (scannerRunning) {
-
-    document.getElementById("scanStatus")
-      .innerText =
-      "📷 กล้องกำลังทำงานอยู่";
-
-    return;
-
-  }
-
-
-  document.getElementById("scanStatus")
-    .innerText =
-    "🔄 กำลังเปิดกล้อง...";
-
+function doGet(e) {
 
   try {
 
-    scanner =
-      new Html5Qrcode("reader");
+    const params = e && e.parameter
+      ? e.parameter
+      : {};
 
+    const action = params.action || "";
 
-    scannerRunning = true;
+    /***********************************************
+     * เปิดหน้า Apps Script Web App
+     ***********************************************/
+    if (!action) {
 
-
-    await scanner.start(
-
-      {
-        facingMode: {
-          exact: "environment"
-        }
-      },
-
-      {
-        fps: 10,
-
-        qrbox: {
-          width: 250,
-          height: 250
-        },
-
-        aspectRatio: 1.0
-
-      },
-
-      function(decodedText) {
-
-        if (scanLock) {
-          return;
-        }
-
-
-        scanLock = true;
-
-
-        const code =
-          String(decodedText || "")
-            .trim();
-
-
-        document.getElementById("scanStatus")
-          .innerText =
-          "✅ อ่าน QR สำเร็จ\n" +
-          code;
-
-
-        document.getElementById("itemCode")
-          .value = code;
-
-
-        stopScanner()
-          .then(function() {
-
-            scanLock = false;
-
-            searchItem();
-
-          });
-
-      },
-
-      function(errorMessage) {
-
-        // ไม่แสดง error ระหว่างที่กล้องกำลังค้นหา QR
-
-      }
-
-    );
-
-
-    document.getElementById("scanStatus")
-      .innerText =
-      "📷 พร้อมสแกน QR Code";
-
-
-  }
-
-  catch (error) {
-
-    console.error(error);
-
-
-    scannerRunning = false;
-
-    scanner = null;
-
-
-    document.getElementById("scanStatus")
-      .innerText =
-      "❌ ไม่สามารถเปิดกล้องได้\n" +
-      "กรุณาตรวจสอบสิทธิ์กล้อง";
-
-
-    alert(
-      "ไม่สามารถเปิดกล้องได้\n\n" +
-      "กรุณาอนุญาตให้ Chrome ใช้กล้อง " +
-      "แล้วกดสแกนอีกครั้ง"
-    );
-
-  }
-
-}
-
-
-/*************************************************
- * STOP SCANNER
- *************************************************/
-
-async function stopScanner() {
-
-  if (!scanner) {
-
-    scannerRunning = false;
-
-    return;
-
-  }
-
-
-  try {
-
-    if (scannerRunning) {
-
-      await scanner.stop();
+      return HtmlService
+        .createHtmlOutput(
+          "<h2>ระบบใบเบิกวัสดุ</h2>" +
+          "<p>Google Apps Script เชื่อมต่อเรียบร้อย</p>"
+        )
+        .setTitle("ระบบใบเบิกวัสดุ");
 
     }
 
-  }
 
-  catch (error) {
+    /***********************************************
+     * ค้นหา Item
+     ***********************************************/
+    if (action === "item") {
 
-    console.log(
-      "Scanner stop:",
-      error
-    );
+      const itemCode =
+        params.itemCode || "";
 
-  }
-
-
-  try {
-
-    scanner.clear();
-
-  }
-
-  catch (error) {
-
-    console.log(
-      "Scanner clear:",
-      error
-    );
-
-  }
-
-
-  scanner = null;
-
-  scannerRunning = false;
-
-}
-
-
-/*************************************************
- * SEARCH ITEM
- *************************************************/
-
-function searchItem() {
-
-  const code =
-    document.getElementById("itemCode")
-      .value
-      .trim();
-
-
-  if (!code) {
-
-    alert(
-      "กรุณาสแกน QR หรือกรอก Item Code"
-    );
-
-    return;
-
-  }
-
-
-  document.getElementById("scanStatus")
-    .innerText =
-    "🔍 กำลังค้นหา Item...";
-
-
-  google.script.run
-
-    .withSuccessHandler(function(item) {
+      const item =
+        findItem(itemCode);
 
       if (!item) {
 
-        selectedItem = null;
-
-
-        document.getElementById("itemInfo")
-          .innerHTML = "";
-
-
-        document.getElementById("scanStatus")
-          .innerText =
-          "❌ ไม่พบ Item";
-
-
-        alert(
-          "ไม่พบ Item Code:\n" +
-          code
+        return jsonpResponse(
+          {
+            success: false,
+            message:
+              "ไม่พบ Item Code: " +
+              itemCode
+          },
+          params.callback
         );
 
-        return;
+      }
+
+      return jsonpResponse(
+        {
+          success: true,
+          item: item
+        },
+        params.callback
+      );
+
+    }
+
+
+    /***********************************************
+     * บันทึกใบเบิก
+     ***********************************************/
+    if (action === "save") {
+
+      const rawData =
+        params.data || "";
+
+      if (!rawData) {
+
+        return jsonpResponse(
+          {
+            success: false,
+            message:
+              "ไม่พบข้อมูลสำหรับบันทึก"
+          },
+          params.callback
+        );
 
       }
 
 
-      selectedItem = item;
+      const formData =
+        JSON.parse(rawData);
 
 
-      document.getElementById("scanStatus")
-        .innerText =
-        "✅ พบ Item";
+      const result =
+        saveRequest(formData);
 
 
-      document.getElementById("itemInfo")
-        .innerHTML = `
-
-          <div class="item-info">
-
-            <b>Item Code:</b>
-            ${escapeHtml(item.itemCode)}
-
-            <br>
-
-            <b>Item Name:</b>
-            ${escapeHtml(item.itemName)}
-
-            <br>
-
-            <b>Description:</b>
-            ${escapeHtml(item.description)}
-
-            <br>
-
-            <b>Unit:</b>
-            ${escapeHtml(item.unit)}
-
-            <br>
-
-            <b>Location:</b>
-            ${escapeHtml(item.location)}
-
-          </div>
-
-        `;
-
-    })
-
-    .withFailureHandler(function(error) {
-
-      console.error(error);
-
-
-      document.getElementById("scanStatus")
-        .innerText =
-        "❌ เชื่อมต่อ Apps Script ไม่สำเร็จ";
-
-
-      alert(
-        "เชื่อมต่อ Apps Script ไม่สำเร็จ\n\n" +
-        "กรุณาตรวจสอบ Deployment ของ Apps Script"
+      return jsonpResponse(
+        result,
+        params.callback
       );
 
-    })
+    }
 
-    .findItem(code);
+
+    /***********************************************
+     * ไม่พบ action
+     ***********************************************/
+
+    return jsonpResponse(
+      {
+        success: false,
+        message:
+          "ไม่รู้จัก action: " +
+          action
+      },
+      params.callback
+    );
+
+  }
+
+  catch (error) {
+
+    return jsonpResponse(
+      {
+        success: false,
+        message:
+          error.message ||
+          String(error)
+      },
+      e &&
+      e.parameter
+        ? e.parameter.callback
+        : null
+    );
+
+  }
 
 }
 
 
 /*************************************************
- * ADD ITEM
+ * JSONP Response
  *************************************************/
 
-function addItem() {
+function jsonpResponse(data, callback) {
 
-  if (!selectedItem) {
+  const json =
+    JSON.stringify(data);
 
-    alert(
-      "กรุณาสแกนหรือค้นหา Item ก่อน"
-    );
+  /***********************************************
+   * ถ้ามี callback
+   * ส่งกลับเป็น JavaScript
+   ***********************************************/
+  if (callback) {
 
-    return;
-
-  }
-
-
-  const qty =
-    Number(
-      document.getElementById("qty")
-        .value
-    );
-
-
-  if (!qty || qty <= 0) {
-
-    alert(
-      "กรุณาระบุจำนวน"
-    );
-
-    return;
-
-  }
-
-
-  const existing =
-    items.find(function(item) {
-
-      return (
-        item.itemCode ===
-        selectedItem.itemCode
+    return ContentService
+      .createTextOutput(
+        callback +
+        "(" +
+        json +
+        ");"
+      )
+      .setMimeType(
+        ContentService.MimeType.JAVASCRIPT
       );
 
-    });
-
-
-  if (existing) {
-
-    existing.qty += qty;
-
-  }
-
-  else {
-
-    items.push({
-
-      itemCode:
-        selectedItem.itemCode,
-
-      itemName:
-        selectedItem.itemName,
-
-      unit:
-        selectedItem.unit,
-
-      qty:
-        qty
-
-    });
-
   }
 
 
-  renderTable();
-
-
-  // เคลียร์ Item ปัจจุบัน
-
-  selectedItem = null;
-
-
-  document.getElementById("itemCode")
-    .value = "";
-
-
-  document.getElementById("qty")
-    .value = "1";
-
-
-  document.getElementById("itemInfo")
-    .innerHTML = "";
-
-
-  document.getElementById("scanStatus")
-    .innerText =
-    "✅ เพิ่มรายการแล้ว\nพร้อมสแกนรายการถัดไป";
-
-
-  lastScannedCode = "";
+  /***********************************************
+   * ถ้าไม่มี callback
+   ***********************************************/
+  return ContentService
+    .createTextOutput(json)
+    .setMimeType(
+      ContentService.MimeType.JSON
+    );
 
 }
 
 
 /*************************************************
- * RENDER TABLE
+ * FIND ITEM
+ *
+ * MASTER_ITEM
+ *
+ * A = No.
+ * B = Category
+ * C = Items Code
+ * D = Product Name-Odoo
+ * E = Description
+ * F = Unit of Measure
+ * G = Location
+ * H = Min Stock
+ * I = Status
  *************************************************/
 
-function renderTable() {
+function findItem(itemCode) {
 
-  const table =
-    document.getElementById("itemTable");
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
 
+  const sheet =
+    ss.getSheetByName(
+      CONFIG.ITEM_SHEET
+    );
 
-  table.innerHTML = "";
+  if (!sheet) {
 
-
-  if (items.length === 0) {
-
-    table.innerHTML = `
-
-      <tr>
-
-        <td
-          colspan="6"
-          class="empty"
-        >
-          ยังไม่มีรายการ
-        </td>
-
-      </tr>
-
-    `;
-
-    return;
+    throw new Error(
+      "ไม่พบ Sheet: " +
+      CONFIG.ITEM_SHEET
+    );
 
   }
 
 
-  items.forEach(function(item, index) {
-
-    const row =
-      document.createElement("tr");
+  const searchCode =
+    normalizeCode(itemCode);
 
 
-    row.innerHTML = `
+  if (!searchCode) {
 
-      <td>
-        ${index + 1}
-      </td>
+    return null;
 
-      <td>
-        ${escapeHtml(item.itemCode)}
-      </td>
-
-      <td class="item-name">
-        ${escapeHtml(item.itemName)}
-      </td>
-
-      <td>
-        ${escapeHtml(item.unit)}
-      </td>
-
-      <td>
-
-        <input
-          class="qty"
-          type="number"
-          min="1"
-          value="${item.qty}"
-          onchange="changeQty(${index}, this.value)"
-        >
-
-      </td>
-
-      <td>
-
-        <button
-          class="delete-btn"
-          onclick="deleteItem(${index})"
-        >
-          ลบ
-        </button>
-
-      </td>
-
-    `;
+  }
 
 
-    table.appendChild(row);
+  const lastRow =
+    sheet.getLastRow();
 
-  });
+
+  if (lastRow < 2) {
+
+    return null;
+
+  }
+
+
+  const data =
+    sheet
+      .getRange(
+        2,
+        1,
+        lastRow - 1,
+        9
+      )
+      .getDisplayValues();
+
+
+  for (
+    let i = 0;
+    i < data.length;
+    i++
+  ) {
+
+    const code =
+      normalizeCode(
+        data[i][2]
+      );
+
+
+    if (code === searchCode) {
+
+      return {
+
+        itemCode:
+          data[i][2] || "",
+
+        itemName:
+          data[i][3] || "",
+
+        description:
+          data[i][4] || "",
+
+        unit:
+          data[i][5] || "",
+
+        location:
+          data[i][6] || "",
+
+        minStock:
+          data[i][7] || "",
+
+        status:
+          data[i][8] || ""
+
+      };
+
+    }
+
+  }
+
+
+  return null;
 
 }
 
 
 /*************************************************
- * CHANGE QTY
+ * Normalize Item Code
  *************************************************/
 
-function changeQty(index, value) {
+function normalizeCode(value) {
 
-  const qty =
-    Number(value);
-
-
-  if (!qty || qty <= 0) {
-
-    items[index].qty = 1;
-
-  }
-
-  else {
-
-    items[index].qty = qty;
-
-  }
-
-
-  renderTable();
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, "")
+    .toUpperCase();
 
 }
 
 
 /*************************************************
- * DELETE ITEM
+ * สร้าง Request No.
+ *
+ * REQ-260827-001
  *************************************************/
 
-function deleteItem(index) {
+function createRequestNo() {
 
-  items.splice(index, 1);
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
 
-  renderTable();
+  const sheet =
+    ss.getSheetByName(
+      CONFIG.TRANSACTION_SHEET
+    );
+
+  if (!sheet) {
+
+    throw new Error(
+      "ไม่พบ Sheet: " +
+      CONFIG.TRANSACTION_SHEET
+    );
+
+  }
+
+
+  const today =
+    Utilities.formatDate(
+      new Date(),
+      Session.getScriptTimeZone(),
+      "yyMMdd"
+    );
+
+
+  const prefix =
+    "REQ-" +
+    today +
+    "-";
+
+
+  const lastRow =
+    sheet.getLastRow();
+
+
+  if (lastRow < 2) {
+
+    return prefix + "001";
+
+  }
+
+
+  const values =
+    sheet
+      .getRange(
+        2,
+        2,
+        lastRow - 1,
+        1
+      )
+      .getDisplayValues();
+
+
+  let maxNo = 0;
+
+
+  values.forEach(
+    function(row) {
+
+      const requestNo =
+        String(row[0] || "")
+          .trim();
+
+
+      if (
+        requestNo.indexOf(prefix) === 0
+      ) {
+
+        const parts =
+          requestNo.split("-");
+
+
+        const number =
+          Number(parts[2]);
+
+
+        if (
+          !isNaN(number) &&
+          number > maxNo
+        ) {
+
+          maxNo = number;
+
+        }
+
+      }
+
+    }
+  );
+
+
+  return (
+    prefix +
+    String(maxNo + 1)
+      .padStart(3, "0")
+  );
 
 }
 
 
 /*************************************************
  * SAVE REQUEST
+ *
+ * TRANSACTION
+ *
+ * A Date/Time
+ * B Request No.
+ * C Employee
+ * D Emp. ID
+ * E Department
+ * F Station
+ * G Model
+ * H Used for
+ * I Item Code
+ * J Item Name
+ * K Unit
+ * L Qty
  *************************************************/
 
-function saveRequest() {
+function saveRequest(formData) {
 
-  const employee =
-    document.getElementById("employee")
-      .value.trim();
-
-
-  const empId =
-    document.getElementById("empId")
-      .value.trim();
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
 
 
-  const department =
-    document.getElementById("department")
-      .value.trim();
-
-
-  const station =
-    document.getElementById("station")
-      .value.trim();
-
-
-  const model =
-    document.getElementById("model")
-      .value.trim();
-
-
-  const usedFor =
-    document.getElementById("usedFor")
-      .value.trim();
-
-
-  if (!employee) {
-
-    alert(
-      "กรุณากรอก Employee"
+  const sheet =
+    ss.getSheetByName(
+      CONFIG.TRANSACTION_SHEET
     );
 
-    return;
+
+  if (!sheet) {
+
+    throw new Error(
+      "ไม่พบ Sheet: " +
+      CONFIG.TRANSACTION_SHEET
+    );
 
   }
 
 
-  if (!empId) {
+  if (
+    !formData ||
+    !Array.isArray(formData.items) ||
+    formData.items.length === 0
+  ) {
 
-    alert(
-      "กรุณากรอก Emp. ID"
+    throw new Error(
+      "ไม่มีรายการ Item"
     );
-
-    return;
 
   }
 
 
-  if (!department) {
-
-    alert(
-      "กรุณากรอก Department"
-    );
-
-    return;
-
-  }
+  const requestNo =
+    createRequestNo();
 
 
-  if (!station) {
-
-    alert(
-      "กรุณากรอก Station"
-    );
-
-    return;
-
-  }
+  const now =
+    new Date();
 
 
-  if (!model) {
-
-    alert(
-      "กรุณากรอก Model"
-    );
-
-    return;
-
-  }
+  const rows = [];
 
 
-  if (!usedFor) {
+  formData.items.forEach(
+    function(item) {
 
-    alert(
-      "กรุณากรอก Used for"
-    );
-
-    return;
-
-  }
+      const qty =
+        Number(item.qty);
 
 
-  if (items.length === 0) {
+      if (!item.itemCode) {
 
-    alert(
-      "กรุณาเพิ่มรายการวัสดุอย่างน้อย 1 รายการ"
-    );
+        throw new Error(
+          "พบรายการที่ไม่มี Item Code"
+        );
 
-    return;
-
-  }
+      }
 
 
-  const formData = {
+      if (
+        !qty ||
+        qty <= 0
+      ) {
 
-    employee:
-      employee,
+        throw new Error(
+          "จำนวน Item ไม่ถูกต้อง: " +
+          item.itemCode
+        );
 
-    empId:
-      empId,
+      }
 
-    department:
-      department,
 
-    station:
-      station,
+      rows.push([
 
-    model:
-      model,
+        now,
 
-    usedFor:
-      usedFor,
+        requestNo,
 
-    items:
-      items
+        formData.employee || "",
+
+        formData.empId || "",
+
+        formData.department || "",
+
+        formData.station || "",
+
+        formData.model || "",
+
+        formData.usedFor || "",
+
+        item.itemCode || "",
+
+        item.itemName || "",
+
+        item.unit || "",
+
+        qty
+
+      ]);
+
+    }
+  );
+
+
+  const startRow =
+    sheet.getLastRow() + 1;
+
+
+  sheet
+    .getRange(
+      startRow,
+      1,
+      rows.length,
+      12
+    )
+    .setValues(rows);
+
+
+  let totalQty = 0;
+
+
+  rows.forEach(
+    function(row) {
+
+      totalQty +=
+        Number(row[11]) || 0;
+
+    }
+  );
+
+
+  return {
+
+    success: true,
+
+    requestNo:
+      requestNo,
+
+    itemCount:
+      rows.length,
+
+    totalQty:
+      totalQty
 
   };
 
-
-  document.getElementById("scanStatus")
-    .innerText =
-    "⏳ กำลังบันทึกใบเบิก...";
-
-
-  google.script.run
-
-    .withSuccessHandler(function(result) {
-
-      if (!result || !result.success) {
-
-        document.getElementById("scanStatus")
-          .innerText =
-          "❌ บันทึกไม่สำเร็จ";
-
-        return;
-
-      }
-
-
-      alert(
-
-        "✅ บันทึกใบเบิกสำเร็จ\n\n" +
-
-        "Request No.: " +
-        result.requestNo +
-
-        "\nจำนวนรายการ: " +
-        result.itemCount
-
-      );
-
-
-      // รีเซ็ตระบบ
-
-      items = [];
-
-      selectedItem = null;
-
-
-      renderTable();
-
-
-      document.getElementById("employee")
-        .value = "";
-
-
-      document.getElementById("empId")
-        .value = "";
-
-
-      document.getElementById("department")
-        .value = "";
-
-
-      document.getElementById("station")
-        .value = "";
-
-
-      document.getElementById("model")
-        .value = "";
-
-
-      document.getElementById("usedFor")
-        .value = "";
-
-
-      document.getElementById("itemCode")
-        .value = "";
-
-
-      document.getElementById("itemInfo")
-        .innerHTML = "";
-
-
-      document.getElementById("scanStatus")
-        .innerText =
-        "พร้อมสำหรับใบเบิกใหม่";
-
-    })
-
-    .withFailureHandler(function(error) {
-
-      console.error(error);
-
-
-      document.getElementById("scanStatus")
-        .innerText =
-        "❌ บันทึกไม่สำเร็จ";
-
-
-      alert(
-        "ไม่สามารถบันทึกใบเบิกได้\n\n" +
-        error.message
-      );
-
-    })
-
-    .saveRequest(formData);
-
 }
-
-
-/*************************************************
- * ESCAPE HTML
- *************************************************/
-
-function escapeHtml(text) {
-
-  return String(text || "")
-
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-
-    .replace(
-      /</g,
-      "&lt;"
-    )
-
-    .replace(
-      />/g,
-      "&gt;"
-    )
-
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-
-}
-
-
-/*************************************************
- * เมื่อปิด/ออกจากหน้า
- *************************************************/
-
-window.addEventListener(
-  "beforeunload",
-  function() {
-
-    if (scanner) {
-
-      try {
-
-        scanner.stop();
-
-      }
-
-      catch (e) {}
-
-    }
-
-  }
-);
-
-
-</script>
-
-</body>
-
-</html>
