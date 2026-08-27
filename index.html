@@ -2,6 +2,7 @@
 <html lang="th">
 
 <head>
+
 <meta charset="UTF-8">
 
 <meta
@@ -9,7 +10,7 @@
   content="width=device-width, initial-scale=1, viewport-fit=cover"
 >
 
-<title>QR Scanner - ระบบใบเบิกวัสดุ</title>
+<title>QR Scanner</title>
 
 <style>
 
@@ -34,24 +35,18 @@ body {
   border-radius: 14px;
   padding: 18px;
   margin-bottom: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
 
 h2 {
   text-align: center;
-  margin-top: 5px;
-}
-
-h3 {
-  margin-top: 0;
 }
 
 button {
   width: 100%;
-  border: 0;
-  border-radius: 9px;
   padding: 14px;
   margin-top: 10px;
+  border: 0;
+  border-radius: 9px;
   font-size: 17px;
   font-weight: bold;
 }
@@ -66,80 +61,79 @@ button {
   color: white;
 }
 
-.scan-image {
+.image {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border-radius: 9px;
   background: #ef6c00;
   color: white;
+  text-align: center;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+#imageInput {
+  display: none;
 }
 
 #cameraArea {
   display: none;
-  margin-top: 15px;
   position: relative;
-  overflow: hidden;
-  border-radius: 12px;
+  margin-top: 15px;
   background: #000;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 #video {
   width: 100%;
   display: block;
-  background: #000;
 }
 
 .scan-frame {
   position: absolute;
   width: 65%;
   aspect-ratio: 1 / 1;
-  border: 3px solid #00e676;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+  border: 3px solid #00e676;
   border-radius: 15px;
-  pointer-events: none;
 }
 
 #status {
   margin-top: 12px;
   padding: 12px;
   border-radius: 8px;
-  background: #eeeeee;
   text-align: center;
   font-weight: bold;
+  white-space: pre-line;
+  background: #e3f2fd;
+  color: #1565c0;
 }
 
 .success {
   background: #e8f5e9 !important;
-  color: #2e7d32;
+  color: #2e7d32 !important;
 }
 
 .error {
   background: #ffebee !important;
-  color: #c62828;
+  color: #c62828 !important;
 }
 
-.info {
-  background: #e3f2fd !important;
-  color: #1565c0;
-}
-
-input[type="file"] {
+#result {
   display: none;
-}
-
-.result-code {
-  font-size: 22px;
-  font-weight: bold;
-  text-align: center;
   margin-top: 15px;
   padding: 15px;
   background: #f1f8e9;
   border-radius: 10px;
+  text-align: center;
+  font-size: 21px;
+  font-weight: bold;
   word-break: break-all;
-}
-
-.back-btn {
-  background: #424242;
-  color: white;
 }
 
 </style>
@@ -156,7 +150,7 @@ input[type="file"] {
 <h2>📷 QR Scanner</h2>
 
 <p style="text-align:center">
-ระบบสแกน Item Code
+สแกน Item Code
 </p>
 
 
@@ -177,21 +171,12 @@ input[type="file"] {
 
 
 <label
+  class="image"
   for="imageInput"
-  class="scan-image"
-  style="
-    display:block;
-    text-align:center;
-    cursor:pointer;
-    margin-top:10px;
-    border-radius:9px;
-    padding:14px;
-    font-size:17px;
-    font-weight:bold;
-  "
 >
 🖼️ เลือกรูป QR จากเครื่อง
 </label>
+
 
 <input
   id="imageInput"
@@ -217,28 +202,12 @@ input[type="file"] {
 
 <div
   id="status"
-  class="info"
 >
 พร้อมสแกน
 </div>
 
 
-<div
-  id="resultCode"
-  class="result-code"
-  style="display:none"
->
-</div>
-
-
-<button
-  id="backBtn"
-  class="back-btn"
-  onclick="backToRequest()"
-  style="display:none"
->
-↩️ กลับระบบใบเบิก
-</button>
+<div id="result"></div>
 
 </div>
 
@@ -248,12 +217,8 @@ input[type="file"] {
 <script>
 
 /*************************************************
- * CONFIG
+ * ตัวแปร
  *************************************************/
-
-const REQUEST_URL =
-"https://script.google.com/macros/s/AKfycbwW5yF3ZFn-tbh8XC-_4WmYNJDOV49CKMYwolu7O-DaKSt5ayOqQgKaH7ccLvD6dkohKg/exec";
-
 
 let stream = null;
 
@@ -263,7 +228,25 @@ let detector = null;
 
 
 /*************************************************
- * START CAMERA
+ * URL สำหรับกลับระบบใบเบิก
+ *
+ * ระบบใบเบิกจะส่งมาแบบ:
+ *
+ * ?return=https://script.google.com/...
+ *************************************************/
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+
+const returnUrl =
+  params.get("return");
+
+
+/*************************************************
+ * เปิดกล้อง
  *************************************************/
 
 async function startCamera() {
@@ -271,19 +254,22 @@ async function startCamera() {
   const status =
     document.getElementById("status");
 
-  status.className = "info";
+
+  status.className = "";
 
   status.innerText =
-    "⏳ กำลังขอสิทธิ์ใช้กล้อง...";
+    "⏳ กำลังเปิดกล้อง...";
 
 
   try {
 
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia) {
+    if (
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
 
       throw new Error(
-        "เบราว์เซอร์นี้ไม่รองรับการเปิดกล้อง"
+        "เบราว์เซอร์ไม่รองรับการเปิดกล้อง"
       );
 
     }
@@ -293,6 +279,7 @@ async function startCamera() {
       await navigator.mediaDevices.getUserMedia({
 
         video: {
+
           facingMode: {
             ideal: "environment"
           },
@@ -327,7 +314,7 @@ async function startCamera() {
       .style.display = "block";
 
 
-    status.className = "info";
+    status.className = "";
 
     status.innerText =
       "📷 กำลังสแกน QR Code...";
@@ -336,7 +323,7 @@ async function startCamera() {
     scanning = true;
 
 
-    startQRDetection();
+    startDetection();
 
   }
 
@@ -349,29 +336,41 @@ async function startCamera() {
       "❌ ไม่สามารถเปิดกล้องได้";
 
 
-    if (error.name === "NotAllowedError") {
+    if (
+      error.name ===
+      "NotAllowedError"
+    ) {
 
       message =
         "❌ ไม่สามารถเปิดกล้องได้\n\n" +
-        "กรุณาอนุญาต Camera ในเบราว์เซอร์";
+        "กรุณาอนุญาต Camera ให้เว็บไซต์นี้";
 
     }
 
-    else if (error.name === "NotFoundError") {
+    else if (
+      error.name ===
+      "NotFoundError"
+    ) {
 
       message =
         "❌ ไม่พบกล้อง";
 
     }
 
-    else if (error.name === "NotReadableError") {
+    else if (
+      error.name ===
+      "NotReadableError"
+    ) {
 
       message =
-        "❌ กล้องถูกใช้งานโดยแอปอื่น";
+        "❌ กล้องกำลังถูกใช้งานโดยแอปอื่น";
 
     }
 
-    else if (error.name === "SecurityError") {
+    else if (
+      error.name ===
+      "SecurityError"
+    ) {
 
       message =
         "❌ เบราว์เซอร์ไม่อนุญาตให้ใช้กล้อง";
@@ -389,7 +388,8 @@ async function startCamera() {
 
     status.className = "error";
 
-    status.innerText = message;
+    status.innerText =
+      message;
 
   }
 
@@ -397,66 +397,26 @@ async function startCamera() {
 
 
 /*************************************************
- * STOP CAMERA
+ * เริ่มอ่าน QR
  *************************************************/
 
-function stopCamera() {
+function startDetection() {
 
-  scanning = false;
-
-
-  if (stream) {
-
-    stream
-      .getTracks()
-      .forEach(function(track) {
-
-        track.stop();
-
-      });
-
-    stream = null;
-
-  }
-
-
-  const video =
-    document.getElementById("video");
-
-
-  video.srcObject = null;
-
-
-  document
-    .getElementById("cameraArea")
-    .style.display = "none";
-
-
-  document
-    .getElementById("status")
-    .innerText =
-      "หยุดกล้องแล้ว";
-
-}
-
-
-/*************************************************
- * QR DETECTION
- *************************************************/
-
-function startQRDetection() {
-
-  if (!("BarcodeDetector" in window)) {
+  if (
+    !("BarcodeDetector" in window)
+  ) {
 
     document
       .getElementById("status")
       .className = "error";
 
+
     document
       .getElementById("status")
       .innerText =
-        "⚠️ เบราว์เซอร์ไม่รองรับการสแกน QR แบบ Real-time\n\n" +
-        "ให้ใช้ปุ่ม 'เลือกรูป QR จากเครื่อง'";
+        "⚠️ Android/Browser นี้ไม่รองรับ\n" +
+        "การสแกน QR แบบ Real-time\n\n" +
+        "ให้ใช้ 'เลือกรูป QR จากเครื่อง'";
 
     return;
 
@@ -475,15 +435,13 @@ function startQRDetection() {
 
 
 /*************************************************
- * DETECT QR
+ * ตรวจ QR
  *************************************************/
 
 async function detectQR() {
 
   if (!scanning) {
-
     return;
-
   }
 
 
@@ -502,7 +460,10 @@ async function detectQR() {
         await detector.detect(video);
 
 
-      if (codes.length > 0) {
+      if (
+        codes &&
+        codes.length > 0
+      ) {
 
         const value =
           codes[0].rawValue;
@@ -522,10 +483,7 @@ async function detectQR() {
 
     catch(error) {
 
-      console.log(
-        "QR detect:",
-        error
-      );
+      console.log(error);
 
     }
 
@@ -540,7 +498,7 @@ async function detectQR() {
 
 
 /*************************************************
- * QR FOUND
+ * พบ QR
  *************************************************/
 
 function qrFound(value) {
@@ -551,7 +509,7 @@ function qrFound(value) {
   stopCamera();
 
 
-  const code =
+  const itemCode =
     String(value).trim();
 
 
@@ -567,35 +525,125 @@ function qrFound(value) {
 
 
   const result =
-    document.getElementById("resultCode");
+    document.getElementById("result");
 
 
   result.style.display = "block";
 
-
   result.innerText =
-    code;
-
-
-  document
-    .getElementById("backBtn")
-    .style.display = "block";
+    itemCode;
 
 
   /*
-   * ส่ง Item Code กลับระบบใบเบิก
+   * ถ้ามี URL กลับระบบใบเบิก
+   * ให้ส่ง Item Code กลับทันที
    */
 
-  sendCodeToRequest(code);
+  if (returnUrl) {
+
+    setTimeout(
+      function() {
+
+        goBack(itemCode);
+
+      },
+      500
+    );
+
+  }
 
 }
 
 
 /*************************************************
- * SCAN IMAGE
+ * กลับระบบใบเบิก
  *************************************************/
 
-function scanImage(input) {
+function goBack(itemCode) {
+
+  try {
+
+    const url =
+      new URL(returnUrl);
+
+
+    url.searchParams.set(
+      "itemCode",
+      itemCode
+    );
+
+
+    window.location.href =
+      url.toString();
+
+  }
+
+  catch(error) {
+
+    console.error(error);
+
+
+    document
+      .getElementById("status")
+      .className = "error";
+
+
+    document
+      .getElementById("status")
+      .innerText =
+        "สแกนสำเร็จ แต่ไม่สามารถกลับระบบใบเบิกได้";
+
+  }
+
+}
+
+
+/*************************************************
+ * หยุดกล้อง
+ *************************************************/
+
+function stopCamera() {
+
+  scanning = false;
+
+
+  if (stream) {
+
+    stream
+      .getTracks()
+      .forEach(
+        function(track) {
+
+          track.stop();
+
+        }
+      );
+
+
+    stream = null;
+
+  }
+
+
+  const video =
+    document.getElementById("video");
+
+
+  video.srcObject = null;
+
+
+  document
+    .getElementById("cameraArea")
+    .style.display = "none";
+
+}
+
+
+/*************************************************
+ * อ่าน QR จากรูป
+ *************************************************/
+
+async function scanImage(input) {
 
   const file =
     input.files &&
@@ -603,33 +651,28 @@ function scanImage(input) {
 
 
   if (!file) {
-
     return;
-
   }
 
 
-  document
-    .getElementById("status")
-    .className = "info";
+  const status =
+    document.getElementById("status");
 
 
-  document
-    .getElementById("status")
-    .innerText =
-      "🔄 กำลังอ่าน QR จากรูป...";
+  status.className = "";
+
+  status.innerText =
+    "🔄 กำลังอ่าน QR จากรูป...";
 
 
-  if (!("BarcodeDetector" in window)) {
+  if (
+    !("BarcodeDetector" in window)
+  ) {
 
-    document
-      .getElementById("status")
-      .className = "error";
+    status.className = "error";
 
-    document
-      .getElementById("status")
-      .innerText =
-        "เบราว์เซอร์นี้ไม่รองรับการอ่าน QR จากรูป";
+    status.innerText =
+      "เบราว์เซอร์ไม่รองรับการอ่าน QR จากรูป";
 
     return;
 
@@ -672,15 +715,11 @@ function scanImage(input) {
 
       catch(error) {
 
-        document
-          .getElementById("status")
-          .className = "error";
+        status.className = "error";
 
-        document
-          .getElementById("status")
-          .innerText =
-            "❌ " +
-            error.message;
+        status.innerText =
+          "❌ " +
+          error.message;
 
       }
 
@@ -689,69 +728,6 @@ function scanImage(input) {
 
   image.src =
     URL.createObjectURL(file);
-
-}
-
-
-/*************************************************
- * SEND CODE BACK
- *************************************************/
-
-function sendCodeToRequest(code) {
-
-  /*
-   * ส่งกลับไปหน้าใบเบิก
-   *
-   * ถ้าเปิด Scanner จากระบบใบเบิก
-   * จะส่งผ่าน localStorage
-   */
-
-  try {
-
-    localStorage.setItem(
-      "scannedItemCode",
-      code
-    );
-
-  }
-
-  catch(error) {
-
-    console.log(error);
-
-  }
-
-}
-
-
-/*************************************************
- * BACK TO REQUEST
- *************************************************/
-
-function backToRequest() {
-
-  const code =
-    document
-      .getElementById("resultCode")
-      .innerText
-      .trim();
-
-
-  if (!code) {
-
-    return;
-
-  }
-
-
-  /*
-   * กลับหน้า Apps Script
-   */
-
-  window.location.href =
-    REQUEST_URL +
-    "?itemCode=" +
-    encodeURIComponent(code);
 
 }
 
