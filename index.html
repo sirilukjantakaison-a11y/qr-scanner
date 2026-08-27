@@ -2,149 +2,161 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>QR Scanner</title>
+<title>QR Scanner</title>
 
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-    }
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #f3f4f6;
+}
 
-    .container {
-      max-width: 600px;
-      margin: auto;
-    }
+.container {
+  max-width: 600px;
+  margin: auto;
+}
 
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.08);
-    }
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
 
-    h2 {
-      text-align: center;
-      margin-top: 0;
-    }
+h2 {
+  text-align: center;
+  margin-top: 0;
+}
 
-    button {
-      width: 100%;
-      border: 0;
-      border-radius: 8px;
-      padding: 14px;
-      margin-top: 10px;
-      font-size: 17px;
-      cursor: pointer;
-    }
+button {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 10px;
+  font-size: 17px;
+  cursor: pointer;
+}
 
-    .blue {
-      background: #1a73e8;
-      color: white;
-    }
+.blue {
+  background: #1a73e8;
+  color: white;
+}
 
-    .gray {
-      background: #666;
-      color: white;
-    }
+.gray {
+  background: #666;
+  color: white;
+}
 
-    .green {
-      background: #188038;
-      color: white;
-    }
+.green {
+  background: #188038;
+  color: white;
+}
 
-    .status {
-      margin-top: 15px;
-      padding: 12px;
-      text-align: center;
-      white-space: pre-line;
-      font-weight: bold;
-    }
+.status {
+  margin-top: 15px;
+  padding: 12px;
+  text-align: center;
+  white-space: pre-line;
+  font-weight: bold;
+  line-height: 1.5;
+}
 
-    #reader {
-      width: 100%;
-      margin-top: 15px;
-    }
+#reader {
+  width: 100%;
+  margin-top: 15px;
+}
 
-    .result {
-      margin-top: 15px;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      word-break: break-all;
-    }
+.result {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  word-break: break-all;
+}
 
-    .hidden {
-      display: none;
-    }
+.hidden {
+  display: none;
+}
 
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-top: 8px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-  </style>
+.danger {
+  color: #d93025;
+}
+
+.camera-list {
+  margin-top: 10px;
+}
+
+.camera-list button {
+  font-size: 14px;
+  padding: 10px;
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-  <div class="card">
+<div class="card">
 
-    <h2>📷 QR Scanner</h2>
+<h2>📷 QR Scanner</h2>
 
-    <button
-      class="blue"
-      onclick="startScanner()">
-      เปิดกล้องและสแกน QR
-    </button>
+<button
+  id="startButton"
+  class="blue"
+  onclick="startScanner()">
+เปิดกล้องและสแกน QR
+</button>
 
-    <button
-      class="gray"
-      onclick="stopScanner()">
-      หยุดกล้อง
-    </button>
+<button
+  class="gray"
+  onclick="stopScanner()">
+หยุดกล้อง
+</button>
 
-    <div id="reader"></div>
+<div id="reader"></div>
 
-    <div id="status" class="status">
-      พร้อมใช้งาน
-    </div>
+<div id="status" class="status">
+พร้อมใช้งาน
+</div>
 
-    <div id="result" class="result hidden">
+<div id="cameraList" class="camera-list"></div>
 
-      <b>ข้อมูลจาก QR</b>
+<div id="result" class="result hidden">
 
-      <div id="decodedText"></div>
+<b>ข้อมูลจาก QR</b>
 
-      <button
-        class="green"
-        onclick="copyResult()">
-        📋 คัดลอก
-      </button>
+<div id="decodedText"></div>
 
-    </div>
+<button
+  class="green"
+  onclick="copyResult()">
+📋 คัดลอก
+</button>
 
-  </div>
+</div>
+
+</div>
 
 </div>
 
 
 <script>
+
+/* =================================================
+   GLOBAL
+================================================= */
 
 let scanner = null;
 let scanning = false;
@@ -157,8 +169,10 @@ let lastResult = "";
 
 function setStatus(message) {
 
-  document.getElementById("status").innerText =
-    message;
+  const el =
+    document.getElementById("status");
+
+  el.innerText = message;
 
 }
 
@@ -176,29 +190,35 @@ async function startScanner() {
     );
 
     return;
+
   }
 
+
   setStatus(
-    "⏳ กำลังตรวจสอบกล้อง..."
+    "⏳ กำลังเตรียมกล้อง..."
   );
+
 
   try {
 
     /* ---------------------------------------------
-       ตรวจสอบ HTTPS
+       1. ตรวจ HTTPS
     --------------------------------------------- */
 
-    if (!window.isSecureContext) {
+    if (
+      !window.isSecureContext &&
+      location.hostname !== "localhost"
+    ) {
 
       throw new Error(
-        "หน้านี้ไม่ใช่ HTTPS"
+        "เว็บไซต์ไม่ใช่ HTTPS"
       );
 
     }
 
 
     /* ---------------------------------------------
-       ตรวจสอบ Browser
+       2. ตรวจ Browser
     --------------------------------------------- */
 
     if (
@@ -207,91 +227,57 @@ async function startScanner() {
     ) {
 
       throw new Error(
-        "Browser ไม่รองรับการใช้งานกล้อง"
+        "Browser ไม่รองรับ getUserMedia"
       );
 
     }
 
 
     /* ---------------------------------------------
-       ขอสิทธิ์กล้องก่อน
+       3. ขอสิทธิ์กล้อง
+       ใช้กล้องหลังโดยตรง
     --------------------------------------------- */
 
     setStatus(
-      "📷 กำลังขอสิทธิ์ใช้กล้อง..."
+      "📷 กรุณาอนุญาตการใช้กล้อง..."
     );
 
-    const stream =
-      await navigator.mediaDevices.getUserMedia({
-        video: true
-      });
+
+    let testStream = null;
 
 
-    /* ---------------------------------------------
-       ปิด stream ทดสอบ
-    --------------------------------------------- */
+    try {
 
-    stream.getTracks().forEach(
-      function(track) {
-        track.stop();
+      testStream =
+        await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: {
+              ideal: "environment"
+            }
+          },
+          audio: false
+        });
+
+    }
+    finally {
+
+      if (testStream) {
+
+        testStream
+          .getTracks()
+          .forEach(function(track) {
+
+            track.stop();
+
+          });
+
       }
-    );
-
-
-    /* ---------------------------------------------
-       อ่านรายการกล้อง
-    --------------------------------------------- */
-
-    const cameras =
-      await Html5Qrcode.getCameras();
-
-
-    if (!cameras || cameras.length === 0) {
-
-      throw new Error(
-        "ไม่พบกล้องในอุปกรณ์"
-      );
 
     }
 
 
     /* ---------------------------------------------
-       เลือกกล้องหลัง
-    --------------------------------------------- */
-
-    let cameraId =
-      cameras[0].id;
-
-
-    const backCamera =
-      cameras.find(
-        function(camera) {
-
-          const label =
-            String(
-              camera.label || ""
-            ).toLowerCase();
-
-          return (
-            label.includes("back") ||
-            label.includes("rear") ||
-            label.includes("environment")
-          );
-
-        }
-      );
-
-
-    if (backCamera) {
-
-      cameraId =
-        backCamera.id;
-
-    }
-
-
-    /* ---------------------------------------------
-       สร้าง Scanner
+       4. สร้าง QR Scanner
     --------------------------------------------- */
 
     scanner =
@@ -307,31 +293,28 @@ async function startScanner() {
 
 
     /* ---------------------------------------------
-       เริ่ม Scanner
+       5. ใช้ facingMode
+       ไม่เรียก getCameras ซ้ำ
     --------------------------------------------- */
 
     await scanner.start(
 
-      cameraId,
+      {
+        facingMode: "environment"
+      },
 
       {
 
         fps: 10,
 
         qrbox: function(
-          viewfinderWidth,
-          viewfinderHeight
+          width,
+          height
         ) {
-
-          const minSize =
-            Math.min(
-              viewfinderWidth,
-              viewfinderHeight
-            );
 
           const size =
             Math.floor(
-              minSize * 0.70
+              Math.min(width, height) * 0.70
             );
 
           return {
@@ -353,11 +336,12 @@ async function startScanner() {
 
       },
 
-      function(errorMessage) {
+      function() {
 
         /*
-         ไม่แสดง error ทุกเฟรม
-         เพราะเป็นเรื่องปกติเมื่อยังหา QR ไม่เจอ
+         ไม่แสดง error ทุก frame
+        เพราะตอนยังหา QR ไม่เจอ
+        ถือเป็นเรื่องปกติ
         */
 
       }
@@ -366,7 +350,7 @@ async function startScanner() {
 
 
     setStatus(
-      "✅ กล้องพร้อม\nกรุณาหันกล้องไปที่ QR"
+      "✅ กล้องพร้อม\nหันกล้องไปที่ QR"
     );
 
 
@@ -401,35 +385,111 @@ async function startScanner() {
     scanner = null;
 
 
-    let message =
-      "❌ ไม่สามารถเปิดกล้องได้";
-
-
-    if (error && error.name) {
-
-      message +=
-        "\nError: " +
-        error.name;
-
-    }
-
-
-    if (error && error.message) {
-
-      message +=
-        "\n" +
-        error.message;
-
-    }
-
-
-    message +=
-      "\n\nกรุณาตรวจสอบสิทธิ์กล้องของ Chrome";
-
-
-    setStatus(message);
+    showCameraError(error);
 
   }
+
+}
+
+
+/* =================================================
+   CAMERA ERROR
+================================================= */
+
+function showCameraError(error) {
+
+  let message =
+    "❌ ไม่สามารถเปิดกล้องได้";
+
+
+  if (error && error.name) {
+
+    message +=
+      "\n\nError: " +
+      error.name;
+
+  }
+
+
+  if (error && error.message) {
+
+    message +=
+      "\n" +
+      error.message;
+
+  }
+
+
+  /* ---------------------------------------------
+     แนะนำตาม Error
+  --------------------------------------------- */
+
+  if (
+    error &&
+    error.name === "NotAllowedError"
+  ) {
+
+    message +=
+      "\n\n🔐 Chrome ไม่ได้รับอนุญาตให้ใช้กล้อง" +
+      "\nกดไอคอน 🔒 ด้านซ้ายของ URL" +
+      "\nเลือก Camera → Allow" +
+      "\nแล้ว Reload หน้าเว็บ";
+
+  }
+
+
+  else if (
+    error &&
+    error.name === "NotFoundError"
+  ) {
+
+    message +=
+      "\n\n📷 ไม่พบกล้องในอุปกรณ์";
+
+  }
+
+
+  else if (
+    error &&
+    error.name === "NotReadableError"
+  ) {
+
+    message +=
+      "\n\n📷 กล้องอาจถูกใช้งานโดยแอปอื่น" +
+      "\nกรุณาปิดแอปที่กำลังใช้กล้อง";
+
+  }
+
+
+  else if (
+    error &&
+    error.name === "OverconstrainedError"
+  ) {
+
+    message +=
+      "\n\n📷 กล้องหลังไม่สามารถใช้งานได้" +
+      "\nระบบจะลองกล้องอื่นในขั้นถัดไป";
+
+  }
+
+
+  else if (
+    error &&
+    error.name === "SecurityError"
+  ) {
+
+    message +=
+      "\n\n🔐 Browser ปฏิเสธการใช้งานกล้อง" +
+      "\nตรวจสอบ HTTPS และสิทธิ์ Camera";
+
+  }
+
+
+  message +=
+    "\n\nURL ต้องเป็น HTTPS";
+
+
+  setStatus(message);
 
 }
 
@@ -441,7 +501,8 @@ async function startScanner() {
 async function handleQR(decodedText) {
 
   const text =
-    String(decodedText || "").trim();
+    String(decodedText || "")
+      .trim();
 
 
   if (!text) {
@@ -462,15 +523,12 @@ async function handleQR(decodedText) {
 
   document.getElementById(
     "decodedText"
-  ).innerText =
-    text;
+  ).innerText = text;
 
 
   document.getElementById(
     "result"
-  ).classList.remove(
-    "hidden"
-  );
+  ).classList.remove("hidden");
 
 
   setStatus(
@@ -489,6 +547,10 @@ async function stopScanner() {
   if (!scanner) {
 
     scanning = false;
+
+    setStatus(
+      "⏹ ไม่มีกล้องกำลังทำงาน"
+    );
 
     return;
 
@@ -542,7 +604,7 @@ async function stopScanner() {
 
 
 /* =================================================
-   COPY RESULT
+   COPY
 ================================================= */
 
 async function copyResult() {
@@ -572,12 +634,42 @@ async function copyResult() {
   catch (error) {
 
     setStatus(
-      "ไม่สามารถคัดลอกอัตโนมัติได้"
+      "❌ ไม่สามารถคัดลอกอัตโนมัติได้"
     );
 
   }
 
 }
+
+
+/* =================================================
+   PAGE LOAD
+================================================= */
+
+window.addEventListener(
+  "load",
+  function() {
+
+    if (
+      location.protocol === "https:" ||
+      location.hostname === "localhost"
+    ) {
+
+      setStatus(
+        "พร้อมใช้งาน\nกดปุ่มเปิดกล้องเพื่อเริ่ม"
+      );
+
+    }
+    else {
+
+      setStatus(
+        "⚠️ หน้านี้ไม่ใช่ HTTPS"
+      );
+
+    }
+
+  }
+);
 
 </script>
 
