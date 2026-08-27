@@ -1,513 +1,493 @@
+```html
 <!DOCTYPE html>
 <html lang="th">
 
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  >
+<title>ระบบใบเบิกวัสดุ QR</title>
 
-  <title>ระบบใบเบิกวัสดุ QR</title>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
-  <!-- QR Scanner -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
+<style>
+* {
+  box-sizing: border-box;
+}
 
-  <style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f3f4f6;
+  margin: 0;
+  padding: 15px;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+.container {
+  max-width: 600px;
+  margin: auto;
+}
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      margin: 0;
-      padding: 15px;
-    }
+h2 {
+  text-align: center;
+  margin-bottom: 5px;
+}
 
-    .container {
-      max-width: 600px;
-      margin: auto;
-    }
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 15px;
+}
 
-    h2 {
-      text-align: center;
-      margin-bottom: 5px;
-    }
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
 
-    .subtitle {
-      text-align: center;
-      color: #666;
-      margin-bottom: 15px;
-    }
+h3 {
+  margin-top: 0;
+}
 
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
-    }
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 10px;
+}
 
-    h3 {
-      margin-top: 0;
-    }
+input {
+  width: 100%;
+  padding: 11px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  font-size: 16px;
+}
 
-    label {
-      display: block;
-      font-weight: bold;
-      margin-top: 10px;
-    }
+button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 17px;
+  cursor: pointer;
+}
 
-    input {
-      width: 100%;
-      padding: 11px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 7px;
-      font-size: 16px;
-    }
+.blue {
+  background: #1a73e8;
+  color: white;
+}
 
-    button {
-      width: 100%;
-      padding: 13px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 17px;
-      cursor: pointer;
-    }
+.gray {
+  background: #666;
+  color: white;
+}
 
-    #startBtn {
-      background: #1a73e8;
-      color: white;
-    }
+.green {
+  background: #188038;
+  color: white;
+  font-weight: bold;
+}
 
-    #stopBtn {
-      background: #666;
-      color: white;
-    }
+.red {
+  background: #d93025;
+  color: white;
+}
 
-    #searchBtn {
-      background: #555;
-      color: white;
-    }
+.reader {
+  width: 100%;
+  margin-top: 15px;
+}
 
-    #addBtn {
-      background: #188038;
-      color: white;
-      font-weight: bold;
-    }
+.status {
+  text-align: center;
+  padding: 10px;
+  font-weight: bold;
+  white-space: pre-line;
+}
 
-    #saveBtn {
-      background: #0b8043;
-      color: white;
-      font-weight: bold;
-    }
+.info {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 10px;
+  display: none;
+}
 
-    #reader {
-      width: 100%;
-      margin-top: 15px;
-    }
+.info div {
+  margin: 6px 0;
+}
 
-    #status {
-      text-align: center;
-      padding: 10px;
-      font-weight: bold;
-      white-space: pre-line;
-    }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
 
-    .item-info {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 12px;
-      margin-top: 10px;
-      display: none;
-    }
+th,
+td {
+  border-bottom: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  vertical-align: middle;
+}
 
-    .item-info div {
-      margin: 5px 0;
-    }
+th {
+  background: #f5f5f5;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
+.qty {
+  width: 70px;
+  padding: 7px;
+}
 
-    th,
-    td {
-      border-bottom: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-      vertical-align: middle;
-    }
+.delete {
+  background: #d93025;
+  color: white;
+  padding: 7px;
+  width: auto;
+  margin: 0;
+  font-size: 14px;
+}
 
-    th {
-      background: #f5f5f5;
-    }
+.empty {
+  text-align: center;
+  color: #777;
+  padding: 20px;
+}
 
-    .qty {
-      width: 70px;
-      padding: 7px;
-    }
-
-    .delete {
-      background: #d93025;
-      color: white;
-      padding: 7px;
-      width: auto;
-      margin: 0;
-      font-size: 14px;
-    }
-
-    .empty {
-      text-align: center;
-      color: #777;
-      padding: 20px;
-    }
-
-  </style>
-
+.camera-error {
+  color: #d93025;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 10px;
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-  <h2>📦 ระบบใบเบิกวัสดุ QR</h2>
+<h2>📦 ระบบใบเบิกวัสดุ QR</h2>
 
-  <div class="subtitle">
-    ใบเบิกวัสดุหลายรายการ
-  </div>
+<div class="subtitle">
+ใบเบิกวัสดุหลายรายการ
+</div>
 
 
-  <!-- ข้อมูลผู้เบิก -->
+<!-- ================================
+     EMPLOYEE
+================================ -->
 
-  <div class="card">
+<div class="card">
 
-    <h3>👤 ข้อมูลผู้เบิก</h3>
+<h3>👤 ข้อมูลผู้เบิก</h3>
 
-    <label>Employee</label>
+<label>Emp. ID</label>
 
-    <input
-      id="employee"
-      type="text"
-      placeholder="ชื่อผู้เบิก"
-    >
+<input
+  id="empId"
+  type="text"
+  placeholder="รหัสพนักงาน">
 
+<button
+  class="blue"
+  onclick="startEmployeeScanner()">
+📷 สแกน QR บัตรพนักงาน
+</button>
 
-    <label>Emp. ID</label>
+<button
+  class="gray"
+  onclick="stopEmployeeScanner()">
+หยุดกล้อง
+</button>
 
-    <input
-      id="empId"
-      type="text"
-      placeholder="รหัสพนักงาน"
-    >
+<div id="readerEmployee" class="reader"></div>
 
+<div id="employeeStatus" class="status">
+พร้อมสแกนบัตรพนักงาน
+</div>
 
-    <label>Department</label>
+<div id="employeeInfo" class="info">
 
-    <input
-      id="department"
-      type="text"
-      placeholder="แผนก"
-    >
+<div>
+<b>Emp. ID:</b>
+<span id="infoEmpId"></span>
+</div>
 
+<div>
+<b>Employee:</b>
+<span id="infoEmployee"></span>
+</div>
 
-    <label>Station</label>
+<div>
+<b>Department:</b>
+<span id="infoDepartment"></span>
+</div>
 
-    <input
-      id="station"
-      type="text"
-      placeholder="Station"
-    >
+<div>
+<b>Station:</b>
+<span id="infoStation"></span>
+</div>
 
+<div>
+<b>Position:</b>
+<span id="infoPosition"></span>
+</div>
 
-    <label>Model</label>
+</div>
 
-    <input
-      id="model"
-      type="text"
-      placeholder="Model"
-    >
+<button
+  class="gray"
+  onclick="searchEmployee()">
+🔍 ค้นหาด้วย Emp. ID
+</button>
 
+</div>
 
-    <label>Used for</label>
 
-    <input
-      id="usedFor"
-      type="text"
-      placeholder="ใช้สำหรับ"
-    >
+<!-- ================================
+     REQUEST
+================================ -->
 
-  </div>
+<div class="card">
 
+<h3>📋 ข้อมูลใบเบิก</h3>
 
-  <!-- Scanner -->
+<label>Model</label>
 
-  <div class="card">
+<input
+  id="model"
+  type="text"
+  placeholder="Model">
 
-    <h3>📷 สแกนวัสดุ</h3>
+<label>Used for</label>
 
-    <button
-      id="startBtn"
-      onclick="startScanner()"
-    >
-      📷 สแกน QR Code
-    </button>
+<input
+  id="usedFor"
+  type="text"
+  placeholder="ใช้สำหรับ">
 
-    <button
-      id="stopBtn"
-      onclick="stopScanner()"
-    >
-      หยุดกล้อง
-    </button>
+</div>
 
-    <div id="reader"></div>
 
-    <div id="status">
-      พร้อมสแกน
-    </div>
+<!-- ================================
+     ITEM SCANNER
+================================ -->
 
-  </div>
+<div class="card">
 
+<h3>📦 สแกนวัสดุ</h3>
 
-  <!-- ค้นหา Item -->
+<button
+  class="blue"
+  onclick="startItemScanner()">
+📷 สแกน QR Item
+</button>
 
-  <div class="card">
+<button
+  class="gray"
+  onclick="stopItemScanner()">
+หยุดกล้อง
+</button>
 
-    <h3>🔎 ค้นหา Item</h3>
+<div id="readerItem" class="reader"></div>
 
-    <input
-      id="itemCodeInput"
-      type="text"
-      placeholder="กรอก Item Code เช่น 07-MGEL-0005"
-    >
+<div id="itemStatus" class="status">
+พร้อมสแกน Item
+</div>
 
-    <button
-      id="searchBtn"
-      onclick="searchItem()"
-    >
-      🔍 ค้นหา Item
-    </button>
+</div>
 
 
-    <div
-      id="itemInfo"
-      class="item-info"
-    >
+<!-- ================================
+     ITEM SEARCH
+================================ -->
 
-      <div>
-        <b>Item Code:</b>
-        <span id="infoCode"></span>
-      </div>
+<div class="card">
 
-      <div>
-        <b>Item Name:</b>
-        <span id="infoName"></span>
-      </div>
+<h3>🔎 ค้นหา Item</h3>
 
-      <div>
-        <b>Description:</b>
-        <span id="infoDescription"></span>
-      </div>
+<input
+  id="itemCodeInput"
+  type="text"
+  placeholder="เช่น 07-MGEL-0005">
 
-      <div>
-        <b>Unit:</b>
-        <span id="infoUnit"></span>
-      </div>
+<button
+  class="gray"
+  onclick="searchItem()">
+🔍 ค้นหา Item
+</button>
 
-      <div>
-        <b>Location:</b>
-        <span id="infoLocation"></span>
-      </div>
+<div id="itemInfo" class="info">
 
-    </div>
+<div>
+<b>Item Code:</b>
+<span id="infoCode"></span>
+</div>
 
+<div>
+<b>Item Name:</b>
+<span id="infoName"></span>
+</div>
 
-    <label>จำนวน</label>
+<div>
+<b>Description:</b>
+<span id="infoDescription"></span>
+</div>
 
-    <input
-      id="itemQty"
-      class="qty"
-      type="number"
-      min="1"
-      value="1"
-    >
+<div>
+<b>Unit:</b>
+<span id="infoUnit"></span>
+</div>
 
-    <button
-      id="addBtn"
-      onclick="addCurrentItem()"
-    >
-      ➕ เพิ่มรายการ
-    </button>
+<div>
+<b>Location:</b>
+<span id="infoLocation"></span>
+</div>
 
-  </div>
+</div>
 
+<label>จำนวน</label>
 
-  <!-- รายการ -->
+<input
+  id="itemQty"
+  class="qty"
+  type="number"
+  min="1"
+  value="1">
 
-  <div class="card">
+<button
+  class="green"
+  onclick="addCurrentItem()">
+➕ เพิ่มรายการ
+</button>
 
-    <h3>📋 รายการที่ต้องการเบิก</h3>
+</div>
 
-    <table>
 
-      <thead>
+<!-- ================================
+     ITEM LIST
+================================ -->
 
-        <tr>
+<div class="card">
 
-          <th>#</th>
-          <th>Item Code</th>
-          <th>Item Name</th>
-          <th>Unit</th>
-          <th>Qty</th>
-          <th></th>
+<h3>📋 รายการที่ต้องการเบิก</h3>
 
-        </tr>
+<table>
 
-      </thead>
+<thead>
+<tr>
+<th>#</th>
+<th>Item Code</th>
+<th>Item Name</th>
+<th>Unit</th>
+<th>Qty</th>
+<th></th>
+</tr>
+</thead>
 
-      <tbody id="itemTable">
+<tbody id="itemTable">
 
-        <tr>
+<tr>
+<td colspan="6" class="empty">
+ยังไม่มีรายการ
+</td>
+</tr>
 
-          <td
-            colspan="6"
-            class="empty"
-          >
-            ยังไม่มีรายการ
-          </td>
+</tbody>
 
-        </tr>
+</table>
 
-      </tbody>
+</div>
 
-    </table>
 
-  </div>
+<!-- ================================
+     SAVE
+================================ -->
 
+<div class="card">
 
-  <!-- บันทึก -->
+<button
+  class="green"
+  onclick="saveRequest()">
+✅ ยืนยันการเบิก
+</button>
 
-  <div class="card">
-
-    <button
-      id="saveBtn"
-      onclick="saveRequest()"
-    >
-      ✅ ยืนยันการเบิก
-    </button>
-
-  </div>
+</div>
 
 </div>
 
 
 <script>
 
-/*************************************************
- * CONFIG
- *************************************************/
+/* =================================================
+   CONFIG
+================================================= */
 
 const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbwIfc0j5P1mygdu4BiHOdZOej7PI5LI2Uu8PYHLDhD1sp9NGj1Xyqn9WhTaB1pTYeZFRg/exec";
+"https://script.google.com/macros/s/AKfycbwIfc0j5P1mygdu4BiHOdZOej7PI5LI2Uu8PYHLDhD1sp9NGj1Xyqn9WhTaB1pTYeZFRg/exec";
 
 
-let scanner = null;
+let employeeScanner = null;
+let itemScanner = null;
 
-let scanning = false;
+let employeeScanning = false;
+let itemScanning = false;
 
+let currentEmployee = null;
 let currentItem = null;
 
 let items = [];
 
 
-/*************************************************
- * STATUS
- *************************************************/
+/* =================================================
+   EMPLOYEE CAMERA
+   ใช้ facingMode โดยตรง
+================================================= */
 
-function setStatus(message) {
+async function startEmployeeScanner() {
 
-  document.getElementById("status")
-    .innerText = message;
-
-}
-
-
-/*************************************************
- * START SCANNER
- *************************************************/
-
-async function startScanner() {
-
-  if (scanning) {
+  if (employeeScanning) {
     return;
   }
 
-
-  setStatus("กำลังเปิดกล้อง...");
-
+  setEmployeeStatus(
+    "⏳ กำลังขอสิทธิ์เปิดกล้อง..."
+  );
 
   try {
 
-    scanner =
-      new Html5Qrcode("reader");
-
-
-    const cameras =
-      await Html5Qrcode.getCameras();
-
-
-    if (!cameras || cameras.length === 0) {
+    if (!window.isSecureContext) {
 
       throw new Error(
-        "ไม่พบกล้องในอุปกรณ์"
+        "เว็บไซต์ไม่ใช่ HTTPS"
       );
-
     }
 
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
 
-    let cameraId =
-      cameras[0].id;
-
-
-    /*
-     * เลือกกล้องหลัง
-     */
-    const backCamera =
-      cameras.find(function(camera) {
-
-        const label =
-          String(camera.label || "")
-            .toLowerCase();
-
-        return (
-          label.includes("back") ||
-          label.includes("rear") ||
-          label.includes("environment")
-        );
-
-      });
-
-
-    if (backCamera) {
-
-      cameraId =
-        backCamera.id;
-
+      throw new Error(
+        "Browser ไม่รองรับการใช้งานกล้อง"
+      );
     }
 
+    employeeScanner =
+      new Html5Qrcode("readerEmployee");
 
-    scanning = true;
+    employeeScanning = true;
 
+    await employeeScanner.start(
 
-    await scanner.start(
-
-      cameraId,
+      {
+        facingMode: {
+          ideal: "environment"
+        }
+      },
 
       {
         fps: 10,
@@ -515,185 +495,176 @@ async function startScanner() {
         qrbox: {
           width: 250,
           height: 250
-        }
+        },
+
+        aspectRatio: 1.0,
+
+        disableFlip: false
 
       },
 
       function(decodedText) {
 
-        handleQRCode(decodedText);
+        handleEmployeeQR(decodedText);
 
       },
 
-      function() {
-
-        /*
-         * ไม่แสดง error
-         * ระหว่างค้นหา QR
-         */
-
-      }
+      function() {}
 
     );
 
-
-    setStatus(
-      "📷 กล้องพร้อม\nนำ QR Code มาไว้ในกรอบ"
+    setEmployeeStatus(
+      "📷 กล้องพร้อม\nสแกน QR บัตรพนักงาน"
     );
 
   }
 
   catch (error) {
 
-    console.error(error);
-
-    scanning = false;
-
-    scanner = null;
-
-    setStatus(
-      "❌ ไม่สามารถเปิดกล้องได้\n" +
-      "กรุณาตรวจสอบสิทธิ์กล้องของ Browser"
+    console.error(
+      "Employee Camera Error:",
+      error
     );
 
-  }
+    employeeScanning = false;
 
-}
+    employeeScanner = null;
 
+    let message =
+      "❌ ไม่สามารถเปิดกล้องได้";
 
-/*************************************************
- * STOP SCANNER
- *************************************************/
-
-async function stopScanner() {
-
-  if (!scanner) {
-
-    scanning = false;
-
-    return;
-
-  }
-
-
-  try {
-
-    if (scanning) {
-
-      await scanner.stop();
-
+    if (error && error.name) {
+      message +=
+        "\nError: " + error.name;
     }
 
-  }
+    if (error && error.message) {
+      message +=
+        "\n" + error.message;
+    }
 
-  catch (error) {
+    message +=
+      "\n\nตรวจสอบสิทธิ์กล้องของ Chrome";
 
-    console.log(error);
-
-  }
-
-
-  try {
-
-    scanner.clear();
+    setEmployeeStatus(message);
 
   }
-
-  catch (error) {
-
-    console.log(error);
-
-  }
-
-
-  scanner = null;
-
-  scanning = false;
 
 }
 
 
-/*************************************************
- * QR CODE
- *************************************************/
+/* =================================================
+   EMPLOYEE QR
+================================================= */
 
-async function handleQRCode(decodedText) {
+async function handleEmployeeQR(decodedText) {
 
-  const code =
+  const empId =
     String(decodedText || "").trim();
 
-
-  if (!code) {
+  if (!empId) {
     return;
   }
 
+  await stopEmployeeScanner();
 
-  await stopScanner();
+  document.getElementById("empId").value =
+    empId;
 
-
-  document.getElementById(
-    "itemCodeInput"
-  ).value = code;
-
-
-  setStatus(
+  setEmployeeStatus(
     "✅ อ่าน QR สำเร็จ\n" +
-    "Item Code: " +
-    code +
+    "Emp. ID: " +
+    empId +
     "\nกำลังค้นหาข้อมูล..."
   );
 
-
-  searchItem(code);
+  searchEmployee(empId);
 
 }
 
 
-/*************************************************
- * SEARCH ITEM
- *************************************************/
+/* =================================================
+   STOP EMPLOYEE CAMERA
+================================================= */
 
-function searchItem(codeFromQR) {
+async function stopEmployeeScanner() {
 
-  const code =
-    codeFromQR ||
-    document.getElementById(
-      "itemCodeInput"
-    ).value.trim();
+  if (!employeeScanner) {
 
-
-  if (!code) {
-
-    setStatus(
-      "กรุณากรอก Item Code"
-    );
+    employeeScanning = false;
 
     return;
+  }
+
+  try {
+
+    if (employeeScanning) {
+      await employeeScanner.stop();
+    }
+
+  }
+  catch (error) {
+
+    console.log(error);
 
   }
 
+  try {
 
-  currentItem = null;
+    employeeScanner.clear();
 
+  }
+  catch (error) {
+
+    console.log(error);
+
+  }
+
+  employeeScanner = null;
+
+  employeeScanning = false;
+
+}
+
+
+/* =================================================
+   SEARCH EMPLOYEE
+================================================= */
+
+function searchEmployee(empIdFromQR) {
+
+  const empId =
+    empIdFromQR ||
+    document.getElementById("empId")
+      .value
+      .trim();
+
+  if (!empId) {
+
+    setEmployeeStatus(
+      "กรุณาระบุ Emp. ID"
+    );
+
+    return;
+  }
+
+  currentEmployee = null;
 
   document.getElementById(
-    "itemInfo"
+    "employeeInfo"
   ).style.display = "none";
 
-
-  setStatus(
-    "⏳ กำลังเชื่อมต่อ Apps Script..."
+  setEmployeeStatus(
+    "⏳ กำลังค้นหาข้อมูลพนักงาน..."
   );
-
 
   const url =
     SCRIPT_URL +
-    "?action=item" +
-    "&itemCode=" +
-    encodeURIComponent(code) +
+    "?action=employee" +
+    "&empId=" +
+    encodeURIComponent(empId) +
     "&t=" +
     Date.now();
-
 
   fetch(url, {
     method: "GET",
@@ -705,10 +676,8 @@ function searchItem(codeFromQR) {
     if (!response.ok) {
 
       throw new Error(
-        "HTTP " +
-        response.status
+        "HTTP " + response.status
       );
-
     }
 
     return response.json();
@@ -719,25 +688,343 @@ function searchItem(codeFromQR) {
 
     if (!data.success) {
 
-      setStatus(
+      setEmployeeStatus(
         "❌ " +
-        (data.message ||
-        "ไม่พบข้อมูล Item")
+        (
+          data.message ||
+          "ไม่พบข้อมูลพนักงาน"
+        )
       );
 
       return;
-
     }
 
+    currentEmployee =
+      data.employee;
+
+    showEmployee(currentEmployee);
+
+    setEmployeeStatus(
+      "✅ พบข้อมูลพนักงาน\n" +
+      currentEmployee.employeeName
+    );
+
+  })
+
+  .catch(function(error) {
+
+    console.error(error);
+
+    setEmployeeStatus(
+      "❌ เชื่อมต่อ Apps Script ไม่สำเร็จ"
+    );
+
+  });
+
+}
+
+
+/* =================================================
+   SHOW EMPLOYEE
+================================================= */
+
+function showEmployee(employee) {
+
+  document.getElementById(
+    "infoEmpId"
+  ).innerText =
+    employee.empId || "";
+
+  document.getElementById(
+    "infoEmployee"
+  ).innerText =
+    employee.employeeName || "";
+
+  document.getElementById(
+    "infoDepartment"
+  ).innerText =
+    employee.department || "";
+
+  document.getElementById(
+    "infoStation"
+  ).innerText =
+    employee.station || "";
+
+  document.getElementById(
+    "infoPosition"
+  ).innerText =
+    employee.position || "";
+
+  document.getElementById(
+    "employeeInfo"
+  ).style.display =
+    "block";
+
+}
+
+
+/* =================================================
+   ITEM CAMERA
+================================================= */
+
+async function startItemScanner() {
+
+  if (itemScanning) {
+    return;
+  }
+
+  setItemStatus(
+    "⏳ กำลังขอสิทธิ์เปิดกล้อง..."
+  );
+
+  try {
+
+    if (!window.isSecureContext) {
+
+      throw new Error(
+        "เว็บไซต์ไม่ใช่ HTTPS"
+      );
+    }
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+
+      throw new Error(
+        "Browser ไม่รองรับการใช้งานกล้อง"
+      );
+    }
+
+    itemScanner =
+      new Html5Qrcode("readerItem");
+
+    itemScanning = true;
+
+    await itemScanner.start(
+
+      {
+        facingMode: {
+          ideal: "environment"
+        }
+      },
+
+      {
+        fps: 10,
+
+        qrbox: {
+          width: 250,
+          height: 250
+        },
+
+        aspectRatio: 1.0,
+
+        disableFlip: false
+
+      },
+
+      function(decodedText) {
+
+        handleItemQR(decodedText);
+
+      },
+
+      function() {}
+
+    );
+
+    setItemStatus(
+      "📷 กล้องพร้อม\nสแกน QR Item"
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Item Camera Error:",
+      error
+    );
+
+    itemScanning = false;
+
+    itemScanner = null;
+
+    let message =
+      "❌ ไม่สามารถเปิดกล้องได้";
+
+    if (error && error.name) {
+      message +=
+        "\nError: " + error.name;
+    }
+
+    if (error && error.message) {
+      message +=
+        "\n" + error.message;
+    }
+
+    message +=
+      "\n\nตรวจสอบสิทธิ์กล้องของ Chrome";
+
+    setItemStatus(message);
+
+  }
+
+}
+
+
+/* =================================================
+   ITEM QR
+================================================= */
+
+async function handleItemQR(decodedText) {
+
+  const code =
+    String(decodedText || "").trim();
+
+  if (!code) {
+    return;
+  }
+
+  await stopItemScanner();
+
+  document.getElementById(
+    "itemCodeInput"
+  ).value = code;
+
+  setItemStatus(
+    "✅ อ่าน QR สำเร็จ\n" +
+    "Item Code: " +
+    code +
+    "\nกำลังค้นหา..."
+  );
+
+  searchItem(code);
+
+}
+
+
+/* =================================================
+   STOP ITEM CAMERA
+================================================= */
+
+async function stopItemScanner() {
+
+  if (!itemScanner) {
+
+    itemScanning = false;
+
+    return;
+  }
+
+  try {
+
+    if (itemScanning) {
+      await itemScanner.stop();
+    }
+
+  }
+  catch (error) {
+
+    console.log(error);
+
+  }
+
+  try {
+
+    itemScanner.clear();
+
+  }
+  catch (error) {
+
+    console.log(error);
+
+  }
+
+  itemScanner = null;
+
+  itemScanning = false;
+
+}
+
+
+/* =================================================
+   SEARCH ITEM
+================================================= */
+
+function searchItem(codeFromQR) {
+
+  const code =
+    codeFromQR ||
+    document.getElementById(
+      "itemCodeInput"
+    ).value
+    .trim();
+
+  if (!code) {
+
+    setItemStatus(
+      "กรุณาระบุ Item Code"
+    );
+
+    return;
+  }
+
+  currentItem = null;
+
+  document.getElementById(
+    "itemInfo"
+  ).style.display = "none";
+
+  setItemStatus(
+    "⏳ กำลังค้นหา Item..."
+  );
+
+  const url =
+    SCRIPT_URL +
+    "?action=item" +
+    "&itemCode=" +
+    encodeURIComponent(code) +
+    "&t=" +
+    Date.now();
+
+  fetch(url, {
+    method: "GET",
+    cache: "no-store"
+  })
+
+  .then(function(response) {
+
+    if (!response.ok) {
+
+      throw new Error(
+        "HTTP " + response.status
+      );
+    }
+
+    return response.json();
+
+  })
+
+  .then(function(data) {
+
+    if (!data.success) {
+
+      setItemStatus(
+        "❌ " +
+        (
+          data.message ||
+          "ไม่พบ Item"
+        )
+      );
+
+      return;
+    }
 
     currentItem =
       data.item;
 
-
     showItem(currentItem);
 
-
-    setStatus(
+    setItemStatus(
       "✅ พบ Item\n" +
       currentItem.itemCode
     );
@@ -748,10 +1035,8 @@ function searchItem(codeFromQR) {
 
     console.error(error);
 
-
-    setStatus(
-      "❌ เชื่อมต่อ Apps Script ไม่สำเร็จ\n" +
-      "กรุณาตรวจสอบ Web App และสิทธิ์การเข้าถึง"
+    setItemStatus(
+      "❌ เชื่อมต่อ Apps Script ไม่สำเร็จ"
     );
 
   });
@@ -759,9 +1044,9 @@ function searchItem(codeFromQR) {
 }
 
 
-/*************************************************
- * SHOW ITEM
- *************************************************/
+/* =================================================
+   SHOW ITEM
+================================================= */
 
 function showItem(item) {
 
@@ -770,30 +1055,25 @@ function showItem(item) {
   ).innerText =
     item.itemCode || "";
 
-
   document.getElementById(
     "infoName"
   ).innerText =
     item.itemName || "";
-
 
   document.getElementById(
     "infoDescription"
   ).innerText =
     item.description || "";
 
-
   document.getElementById(
     "infoUnit"
   ).innerText =
     item.unit || "";
 
-
   document.getElementById(
     "infoLocation"
   ).innerText =
     item.location || "";
-
 
   document.getElementById(
     "itemInfo"
@@ -803,22 +1083,20 @@ function showItem(item) {
 }
 
 
-/*************************************************
- * ADD ITEM
- *************************************************/
+/* =================================================
+   ADD ITEM
+================================================= */
 
 function addCurrentItem() {
 
   if (!currentItem) {
 
     alert(
-      "กรุณาสแกน QR หรือค้นหา Item ก่อน"
+      "กรุณาสแกนหรือค้นหา Item ก่อน"
     );
 
     return;
-
   }
-
 
   const qty =
     Number(
@@ -827,7 +1105,6 @@ function addCurrentItem() {
       ).value
     );
 
-
   if (!qty || qty <= 0) {
 
     alert(
@@ -835,9 +1112,7 @@ function addCurrentItem() {
     );
 
     return;
-
   }
-
 
   const existing =
     items.find(function(item) {
@@ -849,13 +1124,11 @@ function addCurrentItem() {
 
     });
 
-
   if (existing) {
 
     existing.qty += qty;
 
   }
-
   else {
 
     items.push({
@@ -882,16 +1155,13 @@ function addCurrentItem() {
 
   }
 
-
   renderItems();
-
 
   document.getElementById(
     "itemQty"
   ).value = 1;
 
-
-  setStatus(
+  setItemStatus(
     "➕ เพิ่มรายการแล้ว\n" +
     currentItem.itemCode
   );
@@ -899,9 +1169,9 @@ function addCurrentItem() {
 }
 
 
-/*************************************************
- * RENDER ITEMS
- *************************************************/
+/* =================================================
+   RENDER ITEMS
+================================================= */
 
 function renderItems() {
 
@@ -910,9 +1180,7 @@ function renderItems() {
       "itemTable"
     );
 
-
   table.innerHTML = "";
-
 
   if (items.length === 0) {
 
@@ -924,15 +1192,12 @@ function renderItems() {
       "</tr>";
 
     return;
-
   }
-
 
   items.forEach(function(item, index) {
 
     const tr =
       document.createElement("tr");
-
 
     tr.innerHTML =
 
@@ -981,7 +1246,6 @@ function renderItems() {
 
       "</td>";
 
-
     table.appendChild(tr);
 
   });
@@ -989,171 +1253,99 @@ function renderItems() {
 }
 
 
-/*************************************************
- * CHANGE QTY
- *************************************************/
+/* =================================================
+   CHANGE QTY
+================================================= */
 
 function changeQty(index, value) {
 
   const qty =
     Number(value);
 
-
-  if (!qty || qty <= 0) {
-
-    items[index].qty = 1;
-
-  }
-
-  else {
-
-    items[index].qty = qty;
-
-  }
-
+  items[index].qty =
+    (!qty || qty <= 0)
+      ? 1
+      : qty;
 
   renderItems();
 
 }
 
 
-/*************************************************
- * DELETE ITEM
- *************************************************/
+/* =================================================
+   DELETE
+================================================= */
 
 function deleteItem(index) {
 
-  items.splice(
-    index,
-    1
-  );
-
+  items.splice(index, 1);
 
   renderItems();
 
 }
 
 
-/*************************************************
- * SAVE REQUEST
- *************************************************/
+/* =================================================
+   SAVE
+================================================= */
 
 function saveRequest() {
 
-  const employee =
-    document.getElementById(
-      "employee"
-    ).value.trim();
+  if (!currentEmployee) {
 
+    alert(
+      "กรุณาสแกนหรือค้นหา Emp. ID ก่อน"
+    );
 
-  const empId =
-    document.getElementById(
-      "empId"
-    ).value.trim();
-
-
-  const department =
-    document.getElementById(
-      "department"
-    ).value.trim();
-
-
-  const station =
-    document.getElementById(
-      "station"
-    ).value.trim();
-
+    return;
+  }
 
   const model =
     document.getElementById(
       "model"
     ).value.trim();
 
-
   const usedFor =
     document.getElementById(
       "usedFor"
     ).value.trim();
-
-
-  if (!employee) {
-
-    alert("กรุณากรอก Employee");
-
-    return;
-
-  }
-
-
-  if (!empId) {
-
-    alert("กรุณากรอก Emp. ID");
-
-    return;
-
-  }
-
-
-  if (!department) {
-
-    alert("กรุณากรอก Department");
-
-    return;
-
-  }
-
-
-  if (!station) {
-
-    alert("กรุณากรอก Station");
-
-    return;
-
-  }
-
 
   if (!model) {
 
     alert("กรุณากรอก Model");
 
     return;
-
   }
-
 
   if (!usedFor) {
 
     alert("กรุณากรอก Used for");
 
     return;
-
   }
-
 
   if (items.length === 0) {
 
     alert(
-      "กรุณาเพิ่มรายการอย่างน้อย 1 Item"
+      "กรุณาเพิ่มรายการ Item อย่างน้อย 1 รายการ"
     );
 
     return;
-
   }
-
 
   const formData = {
 
     employee:
-      employee,
+      currentEmployee.employeeName,
 
     empId:
-      empId,
+      currentEmployee.empId,
 
     department:
-      department,
+      currentEmployee.department,
 
     station:
-      station,
+      currentEmployee.station,
 
     model:
       model,
@@ -1166,11 +1358,9 @@ function saveRequest() {
 
   };
 
-
-  setStatus(
+  setItemStatus(
     "⏳ กำลังบันทึกใบเบิก..."
   );
-
 
   const url =
     SCRIPT_URL +
@@ -1182,7 +1372,6 @@ function saveRequest() {
     "&t=" +
     Date.now();
 
-
   fetch(url, {
     method: "GET",
     cache: "no-store"
@@ -1193,10 +1382,8 @@ function saveRequest() {
     if (!response.ok) {
 
       throw new Error(
-        "HTTP " +
-        response.status
+        "HTTP " + response.status
       );
-
     }
 
     return response.json();
@@ -1211,58 +1398,27 @@ function saveRequest() {
         result.message ||
         "บันทึกไม่สำเร็จ"
       );
-
     }
 
-
     alert(
-
       "บันทึกใบเบิกสำเร็จ\n\n" +
-
       "Request No.: " +
       result.requestNo +
-      "\n" +
-
-      "รายการ: " +
+      "\nรายการ: " +
       result.itemCount +
-      " Item\n" +
-
-      "จำนวนรวม: " +
+      " Item\nจำนวนรวม: " +
       result.totalQty
-
     );
 
-
-    setStatus(
-
+    setItemStatus(
       "✅ บันทึกสำเร็จ\n" +
-
       "Request No.: " +
       result.requestNo
-
     );
-
 
     items = [];
 
     renderItems();
-
-
-    document.getElementById(
-      "employee"
-    ).value = "";
-
-    document.getElementById(
-      "empId"
-    ).value = "";
-
-    document.getElementById(
-      "department"
-    ).value = "";
-
-    document.getElementById(
-      "station"
-    ).value = "";
 
     document.getElementById(
       "model"
@@ -1278,8 +1434,8 @@ function saveRequest() {
 
     document.getElementById(
       "itemInfo"
-    ).style.display = "none";
-
+    ).style.display =
+      "none";
 
     currentItem = null;
 
@@ -1289,13 +1445,9 @@ function saveRequest() {
 
     console.error(error);
 
-
-    setStatus(
-
+    setItemStatus(
       "❌ บันทึกไม่สำเร็จ\n" +
-
       error.message
-
     );
 
   });
@@ -1303,38 +1455,43 @@ function saveRequest() {
 }
 
 
-/*************************************************
- * ESCAPE HTML
- *************************************************/
+/* =================================================
+   STATUS
+================================================= */
+
+function setEmployeeStatus(message) {
+
+  document.getElementById(
+    "employeeStatus"
+  ).innerText =
+    message;
+
+}
+
+
+function setItemStatus(message) {
+
+  document.getElementById(
+    "itemStatus"
+  ).innerText =
+    message;
+
+}
+
+
+/* =================================================
+   ESCAPE HTML
+================================================= */
 
 function escapeHtml(text) {
 
   return String(text || "")
 
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-
-    .replace(
-      /</g,
-      "&lt;"
-    )
-
-    .replace(
-      />/g,
-      "&gt;"
-    )
-
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-
-    .replace(
-      /'/g,
-      "&#039;"
-    );
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 
 }
 
@@ -1342,3 +1499,4 @@ function escapeHtml(text) {
 
 </body>
 </html>
+```
