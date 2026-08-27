@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
 
 <meta charset="UTF-8">
@@ -8,145 +7,65 @@
 <meta name="viewport"
       content="width=device-width, initial-scale=1">
 
-<title>ระบบใบเบิกวัสดุ QR</title>
+<title>QR Scanner</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
 
-* {
-  box-sizing: border-box;
-}
-
 body {
   font-family: Arial, sans-serif;
   background: #f5f5f5;
   margin: 0;
-  padding: 15px;
+  padding: 20px;
 }
 
 .container {
-  max-width: 600px;
+  max-width: 500px;
   margin: auto;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
 }
 
 h2 {
   text-align: center;
 }
 
-.card {
-  background: white;
-  padding: 16px;
-  border-radius: 12px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.08);
-}
-
-label {
-  display: block;
-  font-weight: bold;
-  margin-top: 12px;
-}
-
-input {
-  width: 100%;
-  padding: 12px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 7px;
-  font-size: 16px;
-}
-
 button {
   width: 100%;
-  padding: 13px;
+  padding: 14px;
   margin-top: 10px;
-  border: none;
+  border: 0;
   border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
+  font-size: 17px;
 }
 
-.start {
+#startBtn {
   background: #1a73e8;
   color: white;
 }
 
-.stop {
-  background: #757575;
+#stopBtn {
+  background: #777;
   color: white;
-}
-
-.search {
-  background: #607d8b;
-  color: white;
-}
-
-.add {
-  background: #ff9800;
-  color: white;
-}
-
-.save {
-  background: #188038;
-  color: white;
-  font-weight: bold;
-}
-
-.delete {
-  background: #d93025;
-  color: white;
-  width: auto;
-  padding: 6px 10px;
-  margin: 0;
 }
 
 #reader {
-  width: 100%;
   margin-top: 15px;
 }
 
-.status {
-  margin-top: 10px;
-  padding: 10px;
-  text-align: center;
-  border-radius: 7px;
-  background: #eeeeee;
-  font-weight: bold;
-}
-
-.item-info {
-  background: #f1f8e9;
-  padding: 12px;
-  margin-top: 12px;
+#result {
+  margin-top: 15px;
+  padding: 15px;
+  background: #eee;
   border-radius: 8px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-th,
-td {
-  border: 1px solid #ddd;
-  padding: 8px;
   text-align: center;
-}
-
-th {
-  background: #eeeeee;
-}
-
-.qty {
-  width: 70px;
-  padding: 7px;
-}
-
-.empty {
-  color: #888;
-  padding: 20px;
+  font-weight: bold;
+  word-break: break-all;
 }
 
 </style>
@@ -157,323 +76,172 @@ th {
 
 <div class="container">
 
-<h2>📦 ระบบใบเบิกวัสดุ</h2>
-
-<!-- ========================= -->
-<!-- ข้อมูลผู้เบิก -->
-<!-- ========================= -->
-
 <div class="card">
 
-<h3>👤 ข้อมูลผู้เบิก</h3>
-
-<label>Employee</label>
-
-<input
-  id="employee"
-  placeholder="ชื่อ-นามสกุล"
->
-
-<label>Emp. ID</label>
-
-<input
-  id="empId"
-  placeholder="รหัสพนักงาน"
->
-
-<label>Department</label>
-
-<input
-  id="department"
-  placeholder="หน่วยงาน"
->
-
-<label>Station</label>
-
-<input
-  id="station"
-  placeholder="Station"
->
-
-<label>Model</label>
-
-<input
-  id="model"
-  placeholder="Model"
->
-
-<label>Used for</label>
-
-<input
-  id="usedFor"
-  placeholder="ใช้สำหรับ"
->
-
-</div>
-
-
-<!-- ========================= -->
-<!-- QR Scanner -->
-<!-- ========================= -->
-
-<div class="card">
-
-<h3>📷 สแกน QR Code</h3>
+<h2>📷 QR Scanner</h2>
 
 <button
-  class="start"
-  onclick="startScanner()"
->
-📷 เริ่มสแกน Item
+  id="startBtn"
+  onclick="startScanner()">
+เริ่มสแกน
 </button>
 
 <button
-  class="stop"
-  onclick="stopScanner()"
->
-⏹ หยุดสแกน
+  id="stopBtn"
+  onclick="stopScanner()">
+หยุดสแกน
 </button>
 
 <div id="reader"></div>
 
-<div
-  id="status"
-  class="status"
->
+<div id="result">
 พร้อมสแกน
 </div>
 
 </div>
 
-
-<!-- ========================= -->
-<!-- Item -->
-<!-- ========================= -->
-
-<div class="card">
-
-<h3>📦 Item</h3>
-
-<label>Item Code</label>
-
-<input
-  id="itemCode"
-  placeholder="สแกน QR หรือกรอก Item Code"
->
-
-<button
-  class="search"
-  onclick="searchItem()"
->
-🔍 ค้นหา Item
-</button>
-
-<div id="itemInfo"></div>
-
-<label>จำนวน</label>
-
-<input
-  id="qty"
-  type="number"
-  min="1"
-  value="1"
->
-
-<button
-  class="add"
-  onclick="addItem()"
->
-➕ เพิ่มรายการ
-</button>
-
 </div>
-
-
-<!-- ========================= -->
-<!-- รายการเบิก -->
-<!-- ========================= -->
-
-<div class="card">
-
-<h3>📋 รายการที่ต้องการเบิก</h3>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>#</th>
-<th>Item Code</th>
-<th>Item Name</th>
-<th>Unit</th>
-<th>Qty</th>
-<th></th>
-
-</tr>
-
-</thead>
-
-<tbody id="itemTable">
-
-<tr>
-
-<td
-  colspan="6"
-  class="empty"
->
-ยังไม่มีรายการ
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-
-<!-- ========================= -->
-<!-- บันทึก -->
-<!-- ========================= -->
-
-<div class="card">
-
-<button
-  class="save"
-  onclick="saveRequest()"
->
-✅ ยืนยันการเบิก
-</button>
-
-</div>
-
-</div>
-
 
 <script>
 
-/*************************************************
- * GOOGLE APPS SCRIPT
- *************************************************/
-
-const SCRIPT_URL =
-"https://script.google.com/macros/s/AKfycbzLMhxd0mP5Z4MR9fU09RMpQPT-y3pFDn3befo235Q9V0tZybIQkD9-_xeRXOfrPqJ2/exec";
-
-
-/*************************************************
- * ตัวแปร
- *************************************************/
-
 let scanner = null;
 
-let selectedItem = null;
 
-let items = [];
-
-
-/*************************************************
- * STATUS
- *************************************************/
-
-function setStatus(message) {
-
-  document.getElementById("status")
-    .innerText = message;
-
-}
-
-
-/*************************************************
- * START SCANNER
- *************************************************/
+/* ================================
+   เริ่มกล้อง
+================================ */
 
 function startScanner() {
 
-  setStatus("🔄 กำลังเปิดกล้อง...");
-
   if (scanner) {
 
-    setStatus("📷 กล้องกำลังทำงาน");
+    document.getElementById("result")
+      .innerText =
+      "📷 กล้องกำลังทำงาน";
 
     return;
 
   }
 
+
+  document.getElementById("result")
+    .innerText =
+    "🔄 กำลังเปิดกล้อง...";
+
+
   scanner =
     new Html5Qrcode("reader");
 
 
-  scanner.start(
+  Html5Qrcode.getCameras()
 
-    {
-      facingMode: {
-        exact: "environment"
+    .then(function(cameras) {
+
+      if (
+        !cameras ||
+        cameras.length === 0
+      ) {
+
+        throw new Error(
+          "ไม่พบกล้อง"
+        );
+
       }
-    },
 
-    {
-      fps: 10,
 
-      qrbox: {
-        width: 250,
-        height: 250
-      },
+      let cameraId =
+        cameras[0].id;
 
-      aspectRatio: 1.0
 
-    },
+      /* เลือกกล้องหลัง ถ้ามี */
 
-    function(decodedText) {
+      for (
+        let i = 0;
+        i < cameras.length;
+        i++
+      ) {
 
-      const code =
-        decodedText.trim();
+        const label =
+          (
+            cameras[i].label || ""
+          ).toLowerCase();
 
-      setStatus(
-        "✅ สแกนได้: " + code
+
+        if (
+          label.includes("back") ||
+          label.includes("rear") ||
+          label.includes("environment")
+        ) {
+
+          cameraId =
+            cameras[i].id;
+
+          break;
+
+        }
+
+      }
+
+
+      return scanner.start(
+
+        cameraId,
+
+        {
+          fps: 10,
+
+          qrbox: {
+            width: 250,
+            height: 250
+          }
+
+        },
+
+        function(decodedText) {
+
+          const code =
+            decodedText.trim();
+
+
+          document.getElementById("result")
+            .innerText =
+            "✅ สแกนสำเร็จ\n\n" +
+            code;
+
+
+          stopScanner();
+
+        },
+
+        function() {
+
+          /* ไม่แสดง error
+             ระหว่างค้นหา QR */
+
+        }
+
       );
 
-      stopScanner();
+    })
 
-      document.getElementById("itemCode")
-        .value = code;
+    .catch(function(error) {
 
-      searchItem();
+      console.error(error);
 
-    },
+      scanner = null;
 
-    function(errorMessage) {
+      document.getElementById("result")
+        .innerText =
+        "❌ ไม่สามารถเปิดกล้องได้";
 
-      // ไม่แสดง error ระหว่างสแกน
-
-    }
-
-  )
-
-  .catch(function(error) {
-
-    console.error(error);
-
-    scanner = null;
-
-    setStatus(
-      "❌ ไม่สามารถเปิดกล้องได้"
-    );
-
-    alert(
-      "ไม่สามารถเปิดกล้องได้\n\n" +
-      "กรุณาตรวจสอบสิทธิ์กล้องของ Browser"
-    );
-
-  });
+    });
 
 }
 
 
-/*************************************************
- * STOP SCANNER
- *************************************************/
+/* ================================
+   หยุดกล้อง
+================================ */
 
 function stopScanner() {
 
@@ -483,8 +251,8 @@ function stopScanner() {
 
   }
 
-  scanner
-    .stop()
+
+  scanner.stop()
 
     .then(function() {
 
@@ -492,9 +260,9 @@ function stopScanner() {
 
       scanner = null;
 
-      setStatus(
-        "⏹ หยุดสแกนแล้ว"
-      );
+      document.getElementById("result")
+        .innerText =
+        "⏹ หยุดสแกนแล้ว";
 
     })
 
@@ -508,723 +276,7 @@ function stopScanner() {
 
 }
 
-
-/*************************************************
- * SEARCH ITEM
- *************************************************/
-
-function searchItem() {
-
-  const code =
-    document.getElementById("itemCode")
-      .value
-      .trim();
-
-
-  if (!code) {
-
-    alert(
-      "กรุณาสแกน QR หรือกรอก Item Code"
-    );
-
-    return;
-
-  }
-
-
-  setStatus(
-    "🔍 กำลังค้นหา Item..."
-  );
-
-
-  jsonp(
-
-    "item",
-
-    {
-      itemCode: code
-    },
-
-    function(result) {
-
-      if (!result.success) {
-
-        selectedItem = null;
-
-        document.getElementById("itemInfo")
-          .innerHTML = "";
-
-        setStatus(
-          "❌ " + result.message
-        );
-
-        return;
-
-      }
-
-
-      selectedItem = {
-
-        itemCode:
-          result.itemCode,
-
-        itemName:
-          result.itemName,
-
-        description:
-          result.description || "",
-
-        unit:
-          result.unit || "",
-
-        location:
-          result.location || ""
-
-      };
-
-
-      document.getElementById("itemInfo")
-        .innerHTML =
-
-        "<div class='item-info'>" +
-
-        "<b>Item Code:</b> " +
-        escapeHtml(
-          selectedItem.itemCode
-        ) +
-
-        "<br>" +
-
-        "<b>Item Name:</b> " +
-        escapeHtml(
-          selectedItem.itemName
-        ) +
-
-        "<br>" +
-
-        "<b>Description:</b> " +
-        escapeHtml(
-          selectedItem.description
-        ) +
-
-        "<br>" +
-
-        "<b>Unit:</b> " +
-        escapeHtml(
-          selectedItem.unit
-        ) +
-
-        "<br>" +
-
-        "<b>Location:</b> " +
-        escapeHtml(
-          selectedItem.location
-        ) +
-
-        "</div>";
-
-
-      setStatus(
-        "✅ พบ Item"
-      );
-
-    }
-
-  );
-
-}
-
-
-/*************************************************
- * ADD ITEM
- *************************************************/
-
-function addItem() {
-
-  if (!selectedItem) {
-
-    alert(
-      "กรุณาสแกนหรือค้นหา Item ก่อน"
-    );
-
-    return;
-
-  }
-
-
-  const qty =
-    Number(
-      document.getElementById("qty")
-        .value
-    );
-
-
-  if (!qty || qty <= 0) {
-
-    alert(
-      "กรุณาระบุจำนวน"
-    );
-
-    return;
-
-  }
-
-
-  const existing =
-    items.find(function(item) {
-
-      return (
-        item.itemCode ===
-        selectedItem.itemCode
-      );
-
-    });
-
-
-  if (existing) {
-
-    existing.qty += qty;
-
-  }
-
-  else {
-
-    items.push({
-
-      itemCode:
-        selectedItem.itemCode,
-
-      itemName:
-        selectedItem.itemName,
-
-      unit:
-        selectedItem.unit,
-
-      qty: qty
-
-    });
-
-  }
-
-
-  renderItems();
-
-
-  document.getElementById("itemCode")
-    .value = "";
-
-  document.getElementById("qty")
-    .value = "1";
-
-  document.getElementById("itemInfo")
-    .innerHTML = "";
-
-  selectedItem = null;
-
-
-  setStatus(
-    "✅ เพิ่มรายการแล้ว พร้อมสแกนรายการถัดไป"
-  );
-
-}
-
-
-/*************************************************
- * RENDER ITEMS
- *************************************************/
-
-function renderItems() {
-
-  const table =
-    document.getElementById("itemTable");
-
-
-  table.innerHTML = "";
-
-
-  if (items.length === 0) {
-
-    table.innerHTML =
-
-      "<tr>" +
-
-      "<td colspan='6' class='empty'>" +
-
-      "ยังไม่มีรายการ" +
-
-      "</td>" +
-
-      "</tr>";
-
-    return;
-
-  }
-
-
-  items.forEach(
-    function(item, index) {
-
-      const row =
-        document.createElement("tr");
-
-
-      row.innerHTML =
-
-        "<td>" +
-        (index + 1) +
-        "</td>" +
-
-        "<td>" +
-        escapeHtml(
-          item.itemCode
-        ) +
-        "</td>" +
-
-        "<td>" +
-        escapeHtml(
-          item.itemName
-        ) +
-        "</td>" +
-
-        "<td>" +
-        escapeHtml(
-          item.unit
-        ) +
-        "</td>" +
-
-        "<td>" +
-
-        "<input " +
-        "class='qty' " +
-        "type='number' " +
-        "min='1' " +
-        "value='" +
-        item.qty +
-        "' " +
-        "onchange='changeQty(" +
-        index +
-        ",this.value)'>" +
-
-        "</td>" +
-
-        "<td>" +
-
-        "<button " +
-        "class='delete' " +
-        "onclick='deleteItem(" +
-        index +
-        ")'>" +
-
-        "ลบ" +
-
-        "</button>" +
-
-        "</td>";
-
-
-      table.appendChild(row);
-
-    }
-
-  );
-
-}
-
-
-/*************************************************
- * CHANGE QTY
- *************************************************/
-
-function changeQty(index, value) {
-
-  const qty =
-    Number(value);
-
-
-  if (!qty || qty <= 0) {
-
-    items[index].qty = 1;
-
-  }
-
-  else {
-
-    items[index].qty = qty;
-
-  }
-
-
-  renderItems();
-
-}
-
-
-/*************************************************
- * DELETE ITEM
- *************************************************/
-
-function deleteItem(index) {
-
-  items.splice(index, 1);
-
-  renderItems();
-
-}
-
-
-/*************************************************
- * SAVE REQUEST
- *************************************************/
-
-function saveRequest() {
-
-  const employee =
-    document.getElementById("employee")
-      .value.trim();
-
-
-  const empId =
-    document.getElementById("empId")
-      .value.trim();
-
-
-  const department =
-    document.getElementById("department")
-      .value.trim();
-
-
-  const station =
-    document.getElementById("station")
-      .value.trim();
-
-
-  const model =
-    document.getElementById("model")
-      .value.trim();
-
-
-  const usedFor =
-    document.getElementById("usedFor")
-      .value.trim();
-
-
-  if (!employee) {
-
-    alert("กรุณากรอก Employee");
-
-    return;
-
-  }
-
-
-  if (!empId) {
-
-    alert("กรุณากรอก Emp. ID");
-
-    return;
-
-  }
-
-
-  if (!department) {
-
-    alert("กรุณากรอก Department");
-
-    return;
-
-  }
-
-
-  if (!station) {
-
-    alert("กรุณากรอก Station");
-
-    return;
-
-  }
-
-
-  if (!model) {
-
-    alert("กรุณากรอก Model");
-
-    return;
-
-  }
-
-
-  if (!usedFor) {
-
-    alert("กรุณากรอก Used for");
-
-    return;
-
-  }
-
-
-  if (items.length === 0) {
-
-    alert(
-      "กรุณาเพิ่มรายการอย่างน้อย 1 รายการ"
-    );
-
-    return;
-
-  }
-
-
-  const data = {
-
-    employee:
-      employee,
-
-    empId:
-      empId,
-
-    department:
-      department,
-
-    station:
-      station,
-
-    model:
-      model,
-
-    usedFor:
-      usedFor,
-
-    items:
-      items
-
-  };
-
-
-  setStatus(
-    "⏳ กำลังบันทึกใบเบิก..."
-  );
-
-
-  jsonp(
-
-    "save",
-
-    {
-      data:
-        JSON.stringify(data)
-    },
-
-    function(result) {
-
-      if (!result.success) {
-
-        setStatus(
-          "❌ " +
-          result.message
-        );
-
-        return;
-
-      }
-
-
-      alert(
-
-        "✅ บันทึกใบเบิกสำเร็จ\n\n" +
-
-        "Request No.: " +
-        result.requestNo +
-
-        "\n\nรายการ: " +
-        result.itemCount +
-
-        " Item\n" +
-
-        "จำนวนรวม: " +
-        result.totalQty
-
-      );
-
-
-      items = [];
-
-      renderItems();
-
-
-      document.getElementById("employee")
-        .value = "";
-
-      document.getElementById("empId")
-        .value = "";
-
-      document.getElementById("department")
-        .value = "";
-
-      document.getElementById("station")
-        .value = "";
-
-      document.getElementById("model")
-        .value = "";
-
-      document.getElementById("usedFor")
-        .value = "";
-
-
-      setStatus(
-        "✅ พร้อมสร้างใบเบิกใหม่"
-      );
-
-    }
-
-  );
-
-}
-
-
-/*************************************************
- * JSONP
- *************************************************/
-
-function jsonp(
-  action,
-  params,
-  callback
-) {
-
-  const callbackName =
-    "callback_" +
-    Date.now() +
-    "_" +
-    Math.floor(
-      Math.random() * 10000
-    );
-
-
-  const script =
-    document.createElement("script");
-
-
-  let finished = false;
-
-
-  function cleanup() {
-
-    if (finished) {
-
-      return;
-
-    }
-
-    finished = true;
-
-    delete window[callbackName];
-
-    script.remove();
-
-  }
-
-
-  window[callbackName] =
-    function(data) {
-
-      try {
-
-        callback(data);
-
-      }
-
-      finally {
-
-        cleanup();
-
-      }
-
-    };
-
-
-  let url =
-    SCRIPT_URL +
-    "?action=" +
-    encodeURIComponent(action);
-
-
-  Object.keys(params)
-    .forEach(function(key) {
-
-      url +=
-        "&" +
-        encodeURIComponent(key) +
-        "=" +
-        encodeURIComponent(
-          params[key]
-        );
-
-    });
-
-
-  url +=
-    "&callback=" +
-    encodeURIComponent(
-      callbackName
-    );
-
-
-  script.onerror =
-    function() {
-
-      cleanup();
-
-      setStatus(
-        "❌ เชื่อมต่อ Google Apps Script ไม่สำเร็จ"
-      );
-
-    };
-
-
-  script.src = url;
-
-
-  document.body.appendChild(script);
-
-}
-
-
-/*************************************************
- * ESCAPE HTML
- *************************************************/
-
-function escapeHtml(text) {
-
-  return String(text || "")
-
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-
-    .replace(
-      /</g,
-      "&lt;"
-    )
-
-    .replace(
-      />/g,
-      "&gt;"
-    )
-
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-
-}
-
 </script>
 
 </body>
-
 </html>
